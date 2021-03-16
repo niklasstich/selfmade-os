@@ -12,6 +12,6 @@ Requires a full and functioning QEMU installation.
 Simply run `make install-toolchain` to install the SJC compiler and `make run` to compile and run the operating system in a QEMU virtual machine.
 
 ## License
-The code in this repository is released under the GNU Public License, of which you can find a copy [here]().
+The code in this repository is released under the GNU Public License Version 3, of which you can find a copy [here](https://github.com/niklasstich/selfmade-os/blob/master/LICENSE).
 
-The SJC compiler is released under the GNU Public License. All copyright remains with Stefan Frenz and Patrick Schmidt.
+The SJC compiler is released under the GNU Public License Version 3. All copyright remains with Stefan Frenz and Patrick Schmidt.
