@@ -4,6 +4,7 @@
 *.IMG
 out/
 .vscode/
+.idea/
 sjc/
 skripte/
 zip/
