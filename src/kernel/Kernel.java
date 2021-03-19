@@ -1,11 +1,12 @@
 package kernel;
 
 import graphics.Console;
+import graphics.ConsoleColors;
 
 public class Kernel {
   public static void main() {
     Console.ClearConsole();
-    Console.Print("Doin\n your mom", (byte)0x07);
+    Console.Print("Hello World", ConsoleColors.BG_BLUE | ConsoleColors.FG_LIGHTGREEN);
     while(true);
   }
 }

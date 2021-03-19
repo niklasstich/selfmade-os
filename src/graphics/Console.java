@@ -19,4 +19,8 @@ public class Console {
 	public static void ClearConsole() {
 		VideoController.ClearVideoMemory();
 	}
+	
+	private static void PrintInternal(char ascii, int cl) {
+	
+	}
 }
