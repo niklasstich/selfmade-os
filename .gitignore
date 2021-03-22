@@ -5,7 +5,8 @@
 out/
 .vscode/
 .idea/
-sjc/
+sjc/*
 skripte/
 zip/
 phasen/
+!sjc/rte.java
