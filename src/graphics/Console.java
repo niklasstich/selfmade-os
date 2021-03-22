@@ -2,6 +2,8 @@ package graphics;
 
 //Basic console output
 public class Console {
+	private String test = "mhm\n";
+	
 	//Prints to console
 	public static void Print(String m) {
 		Print(m, ConsoleColors.DEFAULT_CONSOLE_COLOR);
@@ -13,7 +15,7 @@ public class Console {
 			color = ConsoleColors.DEFAULT_CONSOLE_COLOR;
 		}
 		for(int i=0; i<m.length(); i++){
-			VideoController.WriteChar(m.charAt(i), color);
+			VideoController.HandleChar(m.charAt(i), color);
 		}
 	}
 	public static void ClearConsole() {
@@ -22,5 +24,16 @@ public class Console {
 	
 	private static void PrintInternal(char ascii, int cl) {
 	
+	}
+	
+	public static void DisableCursor() {
+		VideoController.DisableCursor();
+	}
+	
+	public void SetTest(String s){
+		test = s;
+	}
+	public void Test() {
+		Print(test);
 	}
 }

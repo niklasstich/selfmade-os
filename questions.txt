@@ -1,0 +1,1 @@
+-- Starten wir in Real Mode oder Protected Mode? Bringt der Bootloader uns in protected mode?
