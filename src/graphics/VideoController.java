@@ -22,7 +22,7 @@ public class VideoController {
 	private static int videoMemoryPosition = 0;
 	private static final VideoMemory vidMem = (VideoMemory) MAGIC.cast2Struct(VideoMemory.VIDEO_MEMORY_STARTPOS);
 	//Writes a VideoChar to the graphics output
-	public static void HandleChar(int ascii, int color) {
+	protected static void handleChar(int ascii, int color) {
 		if (videoMemoryPosition < 0 || videoMemoryPosition >= 2000) videoMemoryPosition = 0;
 		//TODO: support ascii_bell? that should be handled on the Console level
 		switch (ascii){
@@ -45,21 +45,21 @@ public class VideoController {
 			}
 			case ASCII_LINE_FEED: {
 				//newline + carriage return
-				CarriageReturn();
-				NewLine();
+				carriageReturn();
+				newLine();
 				return;
 			}//not supported
 			case ASCII_FORM_FEED: {
-				ClearVideoMemory();
+				clearVideoMemory();
 				return;
 			}
 			case ASCII_CARRIAGE_RETURN: {
-				CarriageReturn();
+				carriageReturn();
 				return;
 			}
 			default: {
 				if (ascii >= 0x20 && ascii < 0x7F) {
-					WriteCharToMemory(ascii, color);
+					writeCharToMemory(ascii, color);
 					return;
 				}
 			}
@@ -67,13 +67,13 @@ public class VideoController {
 	}
 	//inline for performance?
 	@SJC.Inline
-	private static void WriteCharToMemory(int as, int cl) {
+	private static void writeCharToMemory(int as, int cl) {
 		assert vidMem != null;
 		vidMem.pos[videoMemoryPosition].ascii = (byte)as;
 		vidMem.pos[videoMemoryPosition++].color = (byte)cl;
 	}
 	
-	public static void ClearVideoMemory() {
+	protected static void clearVideoMemory() {
 		videoMemoryPosition = 0;
 		assert vidMem != null;
 		while(videoMemoryPosition<VideoMemory.VIDEO_MEMORY_LENGTH) {
@@ -83,15 +83,19 @@ public class VideoController {
 		videoMemoryPosition = 0;
 	}
 	
-	public static void CarriageReturn() {
+	private static void carriageReturn() {
 		videoMemoryPosition -= videoMemoryPosition % VideoMemory.VIDEO_MEMORY_COLUMNS;
 	}
 	
-	public static void NewLine() {
+	private static void newLine() {
 		videoMemoryPosition +=VideoMemory.VIDEO_MEMORY_COLUMNS;
 	}
 	
-	protected static void UpdateCursor() {
+	protected static void setPos(int x, int y) {
+		videoMemoryPosition = y * VideoMemory.VIDEO_MEMORY_COLUMNS + x;
+	}
+	
+	protected static void updateCursor() {
 		//current pos is videoMemoryPosition+1
 		MAGIC.wIOs8(0x3D4, (byte)0x0F);
 		MAGIC.wIOs8(0x3D5, (byte)(videoMemoryPosition&0xFF));
@@ -99,7 +103,7 @@ public class VideoController {
 		MAGIC.wIOs8(0x3D5, (byte)((videoMemoryPosition>>8)&0xFF));
 	}
 	
-	protected static void DisableCursor() {
+	protected static void disableCursor() {
 		MAGIC.wIOs8(0x3D4, (byte)0x0A);
 		MAGIC.wIOs8(0x3D5, (byte)0x20);
 	}
