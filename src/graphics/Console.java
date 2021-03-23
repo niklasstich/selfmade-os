@@ -1,39 +1,136 @@
 package graphics;
 
+import utils.TypeConv;
+
 //Basic console output
 public class Console {
-	private String test = "mhm\n";
+	private final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
+	private int color = ConsoleColors.DEFAULT_CONSOLE_COLOR;
+	private boolean cursor = true;
 	
-	//Prints to console
-	public static void Print(String m) {
-		Print(m, ConsoleColors.DEFAULT_CONSOLE_COLOR);
+	public void clearConsole() {
+		VideoController.clearVideoMemory();
 	}
-	//TODO: Ask if there is a way to ensure only a proper ConsoleColor is inserted
-	public static void Print(String m, int color) {
-		//If color is invalid, just use the default color
-		if (color < 0 || color > 0xFF) {
-			color = ConsoleColors.DEFAULT_CONSOLE_COLOR;
+	
+	public void disableCursor() {
+		VideoController.disableCursor();
+	}
+	
+	//dynamische Methoden
+	
+	public void setColor(int fg, int bg, boolean blinking) {
+		//enforce sane defaults if args are out of bounds
+		if (fg < ConsoleColors.FG_BLACK || fg > ConsoleColors.FG_WHITE) {
+			fg = ConsoleColors.FG_WHITE;
 		}
-		for(int i=0; i<m.length(); i++){
-			VideoController.HandleChar(m.charAt(i), color);
+		if (bg < ConsoleColors.BG_BLACK || bg > ConsoleColors.BG_LIGHTGREY) {
+			bg = ConsoleColors.BG_BLACK;
 		}
-	}
-	public static void ClearConsole() {
-		VideoController.ClearVideoMemory();
-	}
-	
-	private static void PrintInternal(char ascii, int cl) {
-	
+		color = fg | bg;
+		if (blinking) color |= ConsoleColors.BLINKING;
 	}
 	
-	public static void DisableCursor() {
-		VideoController.DisableCursor();
+	public void setCursor(int newX, int newY) {
+		//TODO: what shall do with out of bounds args
+		VideoController.setPos(newX ,newY);
+		if (cursor) VideoController.updateCursor();
 	}
 	
-	public void SetTest(String s){
-		test = s;
+	public void print(char c) {
+		VideoController.handleChar(c, color);
+		if (cursor) VideoController.updateCursor();
 	}
-	public void Test() {
-		Print(test);
+	
+	public void print(int x) {
+		print(TypeConv.intToString(x));
+		if (cursor) VideoController.updateCursor();
+	}
+	
+	public void print(long x) {
+		print(TypeConv.longToString(x));
+		if (cursor) VideoController.updateCursor();
+	}
+	
+	public void print(String str) {
+		if (str==null) return;
+		for(int i=0;i<str.length();i++) {
+			print(str.charAt(i));
+		}
+		if (cursor) VideoController.updateCursor();
+	}
+	
+	//https://stackoverflow.com/questions/9655181/how-to-convert-a-byte-array-to-a-hex-string-in-java
+	//1 byte
+	public void printHex(byte b) {
+		char[] hexChars = new char[2];
+		int v = b & 0xFF;
+		hexChars[0] = HEX_ARRAY[v>>>4];
+		hexChars[1] = HEX_ARRAY[v&0x0F];
+		print("0x".concat(new String(hexChars)));
+		if (cursor) VideoController.updateCursor();
+	}
+	
+	//2 bytes
+	public void printHex(short s) {
+		printHex(TypeConv.toBytes(s));
+	}
+	
+	//4 bytes
+	public void printHex(int x) {
+		printHex(TypeConv.toBytes(x));
+	}
+	
+	public void printHex(long x) {
+		printHex(TypeConv.toBytes(x));
+	}
+	
+	public void printHex(byte[] b) {
+		char[] hexChars = new char[b.length*2];
+		for (int i = 0; i<b.length; i++) {
+			int v = b[i] & 0xFF;
+			hexChars[i*2] = HEX_ARRAY[v>>>4];
+			hexChars[i*2+1] = HEX_ARRAY[v&0x0F];
+		}
+		print("0x".concat(new String(hexChars)));
+		if (cursor) VideoController.updateCursor();
+	}
+	
+	public void println() {
+		print("\n");
+		if (cursor) VideoController.updateCursor();
+	}
+	
+	//vorgegebene Methoden
+	public void println(char c) {
+		print(c);
+		println();
+		if (cursor) VideoController.updateCursor();
+	}
+	
+	public void println(int i) {
+		print(i);
+		println();
+		if (cursor) VideoController.updateCursor();
+	}
+	
+	public void println(long l) {
+		print(l);
+		println();
+		if (cursor) VideoController.updateCursor();
+	}
+	
+	public void println(String str) {
+		print(str);
+		println();
+		if (cursor) VideoController.updateCursor();
+	}
+	
+	//static debug
+	public static void directPrintInt(int value, int base, int len, int x, int y, int color) {
+	
+	}
+	
+	public static void directPrintChar(char c, int x, int y, int col) {
+	
 	}
 }
