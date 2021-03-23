@@ -1,1 +1,5 @@
--- Starten wir in Real Mode oder Protected Mode? Bringt der Bootloader uns in protected mode?
+-- Starten wir in Real Mode oder Protected Mode? Bringt der Bootloader uns in protected mode? Protected mode!
+-- Warum Console nicht statisch lassen?
+
+-- Bis 28.03. Phase 2 Tippitoppi
+-- Bis 11.04. Phase 3+4
