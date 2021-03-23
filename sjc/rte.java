@@ -73,7 +73,20 @@ public class DynamicRuntime {
 		return newOb;
 	}
 	public static SArray newArray(int length, int arrDim, int entrySize,
-	                              int stdType, Object unitType) { while(true); }
+	                              int stdType, Object unitType) {
+		int scalarSize = MAGIC.getInstScalarSize("SArray");
+		int relocCount = MAGIC.getInstScalarSize("SArray");
+		//if the array is multidimensional or holds relocs, we add the length of it to the reloc count
+		if (arrDim>1 || entrySize<0) relocCount+=length;
+		else scalarSize+=length*entrySize //otherwise, its elements are scalars, so we add to that count
+		SArray arr = (SArray)newInstance(scalarSize, relocCount, MAGIC.clssDesc("SArray"));
+		//overwrite proper attributes
+		MAGIC.assign(arr.length, length);
+		MAGIC.assign(arr._r_unitType, unitType);
+		MAGIC.assign(arr._r_stdType, stdType);
+		MAGIC.assign(arr._r_dim);
+		return arr;
+	}
 	public static void newMultArray(SArray[] parent, int curLevel,
 	                                int destLevel, int length, int arrDim, int entrySize, int stdType,
 	                                Object unitType) { while(true); }
