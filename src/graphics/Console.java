@@ -10,6 +10,7 @@ public class Console {
 	
 	public void clearConsole() {
 		VideoController.clearVideoMemory();
+		if(cursor)VideoController.updateCursor();
 	}
 	
 	public void disableCursor() {
@@ -42,8 +43,7 @@ public class Console {
 	}
 	
 	public void print(int x) {
-		print(TypeConv.intToString(x));
-		if (cursor) VideoController.updateCursor();
+		print((long)x);
 	}
 	
 	public void print(long x) {
@@ -127,10 +127,21 @@ public class Console {
 	
 	//static debug
 	public static void directPrintInt(int value, int base, int len, int x, int y, int color) {
-	
+		return;
 	}
 	
-	public static void directPrintChar(char c, int x, int y, int col) {
+	public static void directPrintChar(char c, int x, int y, int cl) {
+		VideoController.writeCharDirectly(c, x, y, cl);
+	}
 	
+	public static void debug(String msg) {
+		for (int i = 0; i<msg.length(); i++) {
+			VideoController.writeCharDebug(msg.charAt(i), ConsoleColors.DEFAULT_CONSOLE_COLOR);
+		}
+	}
+	
+	//USE WITH GREAT CARE
+	public static void resetConsole() {
+		VideoController.clearVideoMemory();
 	}
 }

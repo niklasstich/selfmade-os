@@ -2,12 +2,13 @@ outputdir = out
 compilerdir = sjc
 compiler_executable = compile
 sourcedir = src
-qemu_executable = qemu
+compatdir = compat
+qemu_executable = qemu-system-x86_64
 toolchain_version = 0190
 
 compile:
 	mkdir -p $(outputdir)
-	cd $(compilerdir) && ./$(compiler_executable) ../$(sourcedir) rte.java -o boot && mv BOOT_FLP.IMG syminfo.txt ../$(outputdir)
+	cd $(compilerdir) && ./$(compiler_executable) ../$(sourcedir) ../$(compatdir)/rte ../$(compatdir)/java/lang -o boot && mv BOOT_FLP.IMG syminfo.txt ../$(outputdir)
 
 run: compile
 	$(qemu_executable) -m 32 -boot a -fda out/BOOT_FLP.IMG

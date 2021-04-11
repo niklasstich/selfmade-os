@@ -4,8 +4,19 @@ import graphics.Console;
 import graphics.ConsoleColors;
 
 public class Kernel {
+	private static final int GDTBASE = 0x10000;
 	public static void main() {
-		testConsole();
+		Console c = new Console();
+		c.clearConsole();
+		c.print("sere du beidl");
+		Interrupts.prepareInterrupts();
+		//set interrupt flag ERST WENN PICs
+		MAGIC.inline(0xFB);
+		
+		
+		biosFun();
+		//interrupt forcen
+		MAGIC.inline(0xCC);
 	}
 
 	public static void testConsole() {
@@ -22,7 +33,7 @@ public class Kernel {
 		c.print(-678L);
 		c.println();
 		c.setColor(ConsoleColors.FG_WHITE, ConsoleColors.BG_BLACK, false);
-		c.println("lueckwaerts".reverse());
+		c.println("rueckwaerts".reverse());
 		c.println(-12839L);
 		c.println(4321);
 		c.println();
@@ -34,5 +45,14 @@ public class Kernel {
 		c.println();
 		c.printHex((long)0x0123456789ABCDEFL);
 		while(true);
+	}
+	
+	public static void biosFun() {
+		BIOS.enterGraphicsMode();
+		for (int i = 0xA0000; i < 0xA0000+64000; i++) {
+			MAGIC.wMem8(i, (byte) (i&0x11));
+		}
+		Time.sleep(2000);
+		BIOS.enterTextMode();
 	}
 }

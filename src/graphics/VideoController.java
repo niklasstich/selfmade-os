@@ -73,6 +73,15 @@ public class VideoController {
 		vidMem.pos[videoMemoryPosition++].color = (byte)cl;
 	}
 	
+	protected static void writeCharDirectly(int as, int x, int y, int cl) {
+		vidMem.pos[x+y*VideoMemory.VIDEO_MEMORY_COLUMNS].ascii = (byte)as;
+		vidMem.pos[x+y*VideoMemory.VIDEO_MEMORY_COLUMNS].color = (byte)cl;
+	}
+	
+	protected static void writeCharDebug(int as, int cl) {
+		writeCharToMemory(as, cl);
+	}
+	
 	protected static void clearVideoMemory() {
 		videoMemoryPosition = 0;
 		assert vidMem != null;

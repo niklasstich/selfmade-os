@@ -9,4 +9,5 @@ sjc/*
 skripte/
 zip/
 phasen/
-!sjc/rte.java
+picos/
+extracode/
