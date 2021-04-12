@@ -6,17 +6,14 @@ import graphics.ConsoleColors;
 public class Kernel {
 	private static final int GDTBASE = 0x10000;
 	public static void main() {
+		MAGIC.doStaticInit();
 		Console c = new Console();
 		c.clearConsole();
-		c.print("sere du beidl");
 		Interrupts.prepareInterrupts();
 		//set interrupt flag ERST WENN PICs
 		MAGIC.inline(0xFB);
 		
-		
-		biosFun();
-		//interrupt forcen
-		MAGIC.inline(0xCC);
+		while(true);
 	}
 
 	public static void testConsole() {

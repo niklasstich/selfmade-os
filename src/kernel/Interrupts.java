@@ -2,8 +2,8 @@ package kernel;
 
 import graphics.Console;
 import graphics.ConsoleColors;
+import hardware.Keyboard;
 
-@SuppressWarnings("StatementWithEmptyBody")
 public class Interrupts {
 	//segment start
 	private static final int IDT_START = 0x07E00;
@@ -154,15 +154,13 @@ public class Interrupts {
 	//hex 20 - IRQ0 Timer
 	@SJC.Interrupt
 	private static void timerHandler() {
-		//TODO: respond to PIC, handle timer in time class
 		Time.increaseSystemTime(55);
 		MAGIC.wIOs8(MASTER, (byte)0x20);
 	}
 	//hex 21 - IRQ1 Keyboard
 	@SJC.Interrupt
 	private static void keyboardHandler() {
-		//TODO: P4 implement keyboard class
-		Console.debug("keyboard");
+		Keyboard.storeKeycode();
 		MAGIC.wIOs8(MASTER, (byte)0x20);
 	}
 	//hex 22-2F - IRQ2-IRQ15 other devices

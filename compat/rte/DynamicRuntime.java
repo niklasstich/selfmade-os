@@ -39,7 +39,7 @@ public class DynamicRuntime {
 		//if the array is multidimensional or holds relocs, we add the length of it to the reloc count
 		if (arrDim>1 || entrySize<0) relocCount+=length;
 		else scalarSize+=length*entrySize; //otherwise, its elements are scalars, so we add to that count
-		SArray arr = (SArray)newInstance(scalarSize, relocCount, MAGIC.clssDesc("SArray"));
+		SArray arr = (SArray)newInstance(scalarSize, relocCount, (SClassDesc) MAGIC.clssDesc("SArray"));
 		//overwrite proper attributes
 		MAGIC.assign(arr.length, length);
 		MAGIC.assign(arr._r_unitType, unitType);

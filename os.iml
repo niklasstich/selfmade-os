@@ -5,6 +5,15 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/compat" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/.vscode" />
+      <excludeFolder url="file://$MODULE_DIR$/abgaben" />
+      <excludeFolder url="file://$MODULE_DIR$/extracode" />
+      <excludeFolder url="file://$MODULE_DIR$/out" />
+      <excludeFolder url="file://$MODULE_DIR$/phasen" />
+      <excludeFolder url="file://$MODULE_DIR$/picos" />
+      <excludeFolder url="file://$MODULE_DIR$/sjc" />
+      <excludeFolder url="file://$MODULE_DIR$/skripte" />
+      <excludeFolder url="file://$MODULE_DIR$/zip" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
