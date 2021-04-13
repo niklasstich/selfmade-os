@@ -140,6 +140,16 @@ public class Console {
 		}
 	}
 	
+	public static void debugHex(byte b) {
+		char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
+		char[] hexChars = new char[2];
+		int v = b & 0xFF;
+		hexChars[0] = HEX_ARRAY[v>>>4];
+		hexChars[1] = HEX_ARRAY[v&0x0F];
+		debug("0x".concat(new String(hexChars)));
+		VideoController.updateCursor();
+	}
+	
 	//USE WITH GREAT CARE
 	public static void resetConsole() {
 		VideoController.clearVideoMemory();

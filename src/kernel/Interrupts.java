@@ -10,7 +10,6 @@ public class Interrupts {
 	private final static int MASTER = 0x20, SLAVE = 0xA0;
 	
 	public static void prepareInterrupts() {
-		int tableLimit = 8*48-1;
 		writeIDTR();
 		
 		createTableEntry(0, getHandlerAddress(MAGIC.mthdOff("Interrupts", "divHandler")));
@@ -55,8 +54,8 @@ public class Interrupts {
 	private static void createTableEntry(int i, int handler) {
 		//low 16 bit offset
 		MAGIC.wMem16(Interrupts.IDT_START+i*8, (short) (handler&0x0000FFFF));
-		//segment address
-		MAGIC.wMem16(Interrupts.IDT_START+i*8+2, (short) 8);
+		//segment address: Segment 1 in GDT
+		MAGIC.wMem16(Interrupts.IDT_START+i*8+2, (short) (1<<3));
 		//options
 		MAGIC.wMem16(Interrupts.IDT_START+i*8+4, (short) 0x8E00);
 		//high 16 bit offset
@@ -86,68 +85,68 @@ public class Interrupts {
 	}
 	
 	//region CPU Interrupts
-		//hex 00 Divide Error
-		@SJC.Interrupt
-		private static void divHandler() {
-			Console.debug("div by 0");
-			while (true);
-		}
-		//hex 01 Debug Exception
-		@SJC.Interrupt
-		private static void debugHandler() {
-			Console.debug("debug");
-		}
-		//hex 02 Non maskable interrupt
-		@SJC.Interrupt
-		private static void nmiHandler() {
-			Console.debug("non maskable interrupt");
-			while (true);
-		}
-		//hex 03 Breakpoint
-		@SJC.Interrupt
-		private static void breakpointHandler() {
-			Console.debug("breakpoint");
-			while (true);
-		}
-		//hex 04 INTO (overflow)
-		@SJC.Interrupt
-		private static void intoHandler() {
-			Console.debug("INTO");
-			while (true);
-		}
-		//hex 05 index out of range
-		@SJC.Interrupt
-		private static void indexOutOfRangeHandler() {
-			Console.debug("i out of range");
-			while (true);
-		}
-		//hex 06 invalid opcode
-		@SJC.Interrupt
-		private static void invalidOpcodeHandler() {
-			Console.debug("invalid opcode");
-			while (true);
-		}
-		//hex 07 reserved
-		//hex 08 double fault (handler exception)
-		@SJC.Interrupt
-		private static void doubleFaultHandler() {
-			Console.debug("double fault");
-			while (true);
-		}
-		//hex 09-0C reserved
-		//hex 0D general protection error (memory protection)
-		@SJC.Interrupt
-		private static void gpeHandler() {
-			Console.debug("memory protection");
-			while (true);
-		}
-		//hex 0E page fault
-		@SJC.Interrupt
-		private static void pageFaultHandler() {
-			Console.debug("page fault");
-			while (true);
-		}
-		//endregion
+	//hex 00 Divide Error
+	@SJC.Interrupt
+	private static void divHandler() {
+		Console.debug("div by 0");
+		while (true);
+	}
+	//hex 01 Debug Exception
+	@SJC.Interrupt
+	private static void debugHandler() {
+									 Console.debug("debug");
+															 }
+	//hex 02 Non maskable interrupt
+	@SJC.Interrupt
+	private static void nmiHandler() {
+		Console.debug("non maskable interrupt");
+		while (true);
+	}
+	//hex 03 Breakpoint
+	@SJC.Interrupt
+	private static void breakpointHandler() {
+		Console.debug("breakpoint");
+		while (true);
+	}
+	//hex 04 INTO (overflow)
+	@SJC.Interrupt
+	private static void intoHandler() {
+		Console.debug("INTO");
+		while (true);
+	}
+	//hex 05 index out of range
+	@SJC.Interrupt
+	private static void indexOutOfRangeHandler() {
+		Console.debug("i out of range");
+		while (true);
+	}
+	//hex 06 invalid opcode
+	@SJC.Interrupt
+	private static void invalidOpcodeHandler() {
+		Console.debug("invalid opcode");
+		while (true);
+	}
+	//hex 07 reserved
+	//hex 08 double fault (handler exception)
+	@SJC.Interrupt
+	private static void doubleFaultHandler() {
+		Console.debug("double fault");
+		while (true);
+	}
+	//hex 09-0C reserved
+	//hex 0D general protection error (memory protection)
+	@SJC.Interrupt
+	private static void gpeHandler() {
+		Console.debug("memory protection");
+		while (true);
+	}
+	//hex 0E page fault
+	@SJC.Interrupt
+	private static void pageFaultHandler() {
+		Console.debug("page fault");
+		while (true);
+	}
+	//endregion
 	
 	//region HARDWARE INTERRUPTS
 	//hex 0F-1F reserved

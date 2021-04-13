@@ -2,6 +2,7 @@ package kernel;
 
 import graphics.Console;
 import graphics.ConsoleColors;
+import hardware.Keyboard;
 
 public class Kernel {
 	private static final int GDTBASE = 0x10000;
@@ -12,8 +13,9 @@ public class Kernel {
 		Interrupts.prepareInterrupts();
 		//set interrupt flag ERST WENN PICs
 		MAGIC.inline(0xFB);
+		while(true){
 		
-		while(true);
+		}
 	}
 
 	public static void testConsole() {
