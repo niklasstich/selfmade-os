@@ -128,7 +128,7 @@ public class Key {
 	public static final int HOME = 0x114;
 	public static final int END = 0x115;
 	public static final int PRINT_SCREEN = 0x116;
-	public static final int SCROLL_LOCK = 0x117;
+	public static final int SCROLLLOCK = 0x117;
 	public static final int PAUSE = 0x118;
 	public static final int NUMLOCK = 0x119;
 	public static final int ALT_GR = 0x11A;

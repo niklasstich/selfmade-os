@@ -1,19 +1,20 @@
-package java.lang;
+package hardware;
 
+import hardware.KeyboardEvent;
 
-public class ByteRingBuffer {
+public class KeyboardEventRingBuffer {
 	private static final int DEFAULT_SIZE = 64;
-	private final byte[] buffer;
+	private final KeyboardEvent[] buffer;
 	private final int size;
 	private int writePointer = 0;
 	private int readPointer = 0;
-	public ByteRingBuffer() {
-		buffer = new byte[DEFAULT_SIZE];
+	public KeyboardEventRingBuffer() {
+		buffer = new KeyboardEvent[DEFAULT_SIZE];
 		size = DEFAULT_SIZE;
 	}
 	
-	public ByteRingBuffer(int size) {
-		buffer = new byte[size];
+	public KeyboardEventRingBuffer(int size) {
+		buffer = new KeyboardEvent[size];
 		this.size = size;
 	}
 	
@@ -35,28 +36,28 @@ public class ByteRingBuffer {
 	}
 	
 	//returns whether or not there is new data to be read
-	//if canRead() returns false, then readByte() and peekByte() will read old data
+	//if canRead() returns false, then readEvent() and peekEvent() will read old data
 	public boolean canRead() {
 		return readPointer != writePointer;
 	}
 	
-	//returns the next byte in the buffer without advancing the read pointer
+	//returns the next event in the buffer without advancing the read pointer
 	//if canRead() returns false, then this will return old data
-	public byte peekByte() {
+	public KeyboardEvent peekEvent() {
 		return buffer[readPointer];
 	}
 	
-	//returns the next byte in the buffer
+	//returns the next event in the buffer
 	//if canRead() returns false, then this will return old data
-	public byte readByte() {
-		byte b = peekByte();
+	public KeyboardEvent readEvent() {
+		KeyboardEvent b = peekEvent();
 		increaseReadPointer();
 		return b;
 	}
 	
-	//writes the byte b into the buffer
-	public void writeByte(byte b) {
-		buffer[writePointer] = b;
+	//writes the event e into the buffer
+	public void writeEvent(KeyboardEvent e) {
+		buffer[writePointer] = e;
 		increaseWritePointer();
 	}
 	
@@ -64,5 +65,4 @@ public class ByteRingBuffer {
 	public void clearBuffer() {
 		readPointer = writePointer = 0;
 	}
-	
 }

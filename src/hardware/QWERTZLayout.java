@@ -247,7 +247,7 @@ public class QWERTZLayout extends KeyboardLayout{
             case 0x45:
                 return Key.NUMLOCK;
             case 0x46:
-                return Key.SCROLL_LOCK;
+                return Key.SCROLLLOCK;
             case 0x47:
             case 0xE047:
                 return Key.HOME;
