@@ -3,6 +3,7 @@ package kernel;
 import graphics.Console;
 import graphics.ConsoleColors;
 import hardware.Keyboard;
+import hardware.KeyboardEvent;
 
 public class Kernel {
 	private static final int GDTBASE = 0x10000;
@@ -14,7 +15,11 @@ public class Kernel {
 		//set interrupt flag ERST WENN PICs
 		MAGIC.inline(0xFB);
 		while(true){
-		
+			Keyboard.processInputBuffer();
+			if (Keyboard.eventAvailable()) {
+				KeyboardEvent key = Keyboard.getNextKeyboardEvent();
+				c.print(key.KEYCODE);
+			}
 		}
 	}
 

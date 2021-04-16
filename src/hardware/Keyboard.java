@@ -18,6 +18,7 @@ public class Keyboard {
 	private static boolean CAPSLOCK_LOCK, SCROLLLOCK_LOCK, NUMLOCK_LOCK;
 	static {
 		inputBuffer = new ByteRingBuffer();
+		outputBuffer = new KeyboardEventRingBuffer();
 	}
 	
 	public static void changeKeyboardLayout(KeyboardLayout newLayout) {
@@ -30,7 +31,6 @@ public class Keyboard {
 			return;
 		}
 		inputBuffer.writeByte(b);
-		Console.debugHex(b);
 	}
 	
 	//interface to loop
@@ -41,18 +41,18 @@ public class Keyboard {
 		while(inputBuffer.canRead()) {
 			int bitmask = 0;
 			byte b = inputBuffer.readByte();
-			bitmask = bitmask | b;
+			bitmask = (bitmask | (b&0xFF));
 			if ((b&0xFF)==0xE0) { //sequence, read one more byte
 				byte b1 = inputBuffer.readByte();
-				bitmask = (bitmask << 8) | b1;
+				bitmask = (bitmask << 8) | (b1&0xFF);
 			} else if ((b&0xFF)==0xE1) { //sequence, read two more bytes
 				byte b1 = inputBuffer.readByte();
 				byte b2 = inputBuffer.readByte();
-				bitmask = (((bitmask << 8) | b1) << 8) | b2;
+				bitmask = (((bitmask << 8) | (b1&0xFF)) << 8) | (b2&0xFF);
 			}
 			int key;
 			//remember if break key for later
-			boolean breakKey = (bitmask & 0x80) > 0;
+			boolean breakKey = (bitmask & 0xFF) >= 0x80;
 			//get key
 			key = layout.translatePhysToLogicalKey(bitmask & 0xFFFFFF7F, SHIFT, CTRL, ALT);
 			switch (key) {
@@ -132,6 +132,8 @@ public class Keyboard {
 				default:
 					if (!breakKey) {
 						outputBuffer.writeEvent(new KeyboardEvent(ALT, SHIFT, CTRL, CAPSLOCK, SCROLLLOCK, NUMLOCK, key));
+						//invalidate flags for standalone keys, because other make key has been sent
+						SHIFT_STANDALONE = ALT_STANDALONE = CTRL_STANDALONE = false;
 					}
 			}
 		}
@@ -139,12 +141,18 @@ public class Keyboard {
 	
 	//returns the next KeyboardEvent
 	public static KeyboardEvent getNextKeyboardEvent() {
-	
+		return outputBuffer.readEvent();
 	}
 	
 	//returns whether or not there is a new KeyboardEvent available
 	public static boolean eventAvailable() {
+		return outputBuffer.canRead();
+	}
 	
+	//completely clears all keyboard related buffers
+	public static void clearAllBuffers() {
+		inputBuffer.clearBuffer();
+		outputBuffer.clearBuffer();
 	}
 	
 	

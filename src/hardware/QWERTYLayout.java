@@ -1,9 +1,22 @@
 package hardware;
 
+import graphics.Console;
+
 public class QWERTYLayout extends KeyboardLayout {
     @Override
     public int translatePhysToLogicalKey(int physKey, boolean shift, boolean caps, boolean alt) {
         boolean upperCase = shift ^ caps;
+        /* Debug
+        Console.debug("t");
+        if (shift) {
+            Console.debug("s");
+        }
+        if (caps) {
+            Console.debug("c");
+        }
+        if (upperCase) {
+            Console.debug("u");
+        }*/
         switch (physKey) {
             case 0x01:
                 return Key.ESCAPE;
@@ -48,8 +61,9 @@ public class QWERTYLayout extends KeyboardLayout {
                     return Key.RIGHT_ROUND_BRACKET;
                 return Key.ZERO;
             case 0x0C:
-                if (upperCase)
+                if (upperCase){
                     return Key.UNDERSCORE;
+                }
                 return Key.MINUS;
             case 0x0D:
                 if (upperCase)

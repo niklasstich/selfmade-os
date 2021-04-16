@@ -1,6 +1,8 @@
 package java.lang;
 
 
+import graphics.Console;
+
 public class ByteRingBuffer {
 	private static final int DEFAULT_SIZE = 64;
 	private final byte[] buffer;

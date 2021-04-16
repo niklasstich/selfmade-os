@@ -1,5 +1,6 @@
 package hardware;
 
+import graphics.Console;
 import hardware.KeyboardEvent;
 
 public class KeyboardEventRingBuffer {

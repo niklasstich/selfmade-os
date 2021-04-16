@@ -34,18 +34,21 @@ public class DynamicRuntime {
 	//creates a new array object
 	public static SArray newArray(int length, int arrDim, int entrySize,
 	                              int stdType, Object unitType) {
-		int scalarSize = MAGIC.getInstScalarSize("SArray");
-		int relocCount = MAGIC.getInstScalarSize("SArray");
-		//if the array is multidimensional or holds relocs, we add the length of it to the reloc count
-		if (arrDim>1 || entrySize<0) relocCount+=length;
-		else scalarSize+=length*entrySize; //otherwise, its elements are scalars, so we add to that count
-		SArray arr = (SArray)newInstance(scalarSize, relocCount, (SClassDesc) MAGIC.clssDesc("SArray"));
-		//overwrite proper attributes
-		MAGIC.assign(arr.length, length);
-		MAGIC.assign(arr._r_unitType, unitType);
-		MAGIC.assign(arr._r_stdType, stdType);
-		MAGIC.assign(arr._r_dim, arrDim);
-		return arr;
+		int scS, rlE;
+		SArray me;
+		
+		if (stdType==0 && unitType._r_type!=MAGIC.clssDesc("SClassDesc"))
+			MAGIC.inline(0xCC); //check type of unitType, we don't support interface arrays
+		scS=MAGIC.getInstScalarSize("SArray");
+		rlE=MAGIC.getInstRelocEntries("SArray");
+		if (arrDim>1 || entrySize<0) rlE+=length;
+		else scS+=length*entrySize;
+		me=(SArray)newInstance(scS, rlE, (SClassDesc) MAGIC.clssDesc("SArray"));
+		MAGIC.assign(me.length, length);
+		MAGIC.assign(me._r_dim, arrDim);
+		MAGIC.assign(me._r_stdType, stdType);
+		MAGIC.assign(me._r_unitType, unitType);
+		return me;
 	}
 	//create a new multi level array
 	//aus dem Handbuch kopiert :/
@@ -82,9 +85,60 @@ public class DynamicRuntime {
 		return false; //Objekt passt nicht zu Klasse
 	}
 	public static SIntfMap isImplementation(Object o, SIntfDesc dest,
-	                                        boolean asCast) { while(true); }
-	public static boolean isArray(SArray o, int stdType,
-	                              Object unitType, int arrDim, boolean asCast) { while(true); }
-	public static void checkArrayStore(Object dest,
-	                                   SArray newEntry) { while(true); }
+	                                        boolean asCast) {
+		SIntfMap check;
+		
+		if (o==null) return null;
+		check=o._r_type.implementations;
+		while (check!=null) {
+			if (check.owner==dest) return check;
+			check=check.next;
+		}
+		if (asCast) MAGIC.inline(0xCC);
+		return null;
+	}
+	public static boolean isArray(SArray o, int stdType, SClassDesc clssType, int arrDim, boolean asCast) {
+		SClassDesc clss;
+		
+		//in fact o is of type "Object", _r_type has to be checked below - but this check is faster than "instanceof" and conversion
+		if (o==null) {
+			if (asCast) return true; //null matches all
+			return false; //null is not an instance
+		}
+		if (o._r_type!=MAGIC.clssDesc("SArray")) { //will never match independently of arrDim
+			if (asCast) MAGIC.inline(0xCC);
+			return false;
+		}
+		if (clssType==MAGIC.clssDesc("SArray")) { //special test for arrays
+			if (o._r_unitType==MAGIC.clssDesc("SArray")) arrDim--; //an array of SArrays, make next test to ">=" instead of ">"
+			if (o._r_dim>arrDim) return true; //at least one level has to be left to have an object of type SArray
+			if (asCast) MAGIC.inline(0xCC);
+			return false;
+		}
+		//no specials, check arrDim and check for standard type
+		if (o._r_stdType!=stdType || o._r_dim<arrDim) { //check standard types and array dimension
+			if (asCast) MAGIC.inline(0xCC);
+			return false;
+		}
+		if (stdType!=0) {
+			if (o._r_dim==arrDim) return true; //array of standard-type matching
+			if (asCast) MAGIC.inline(0xCC);
+			return false;
+		}
+		//array of objects, make deep-check for class type (PicOS does not support interface arrays)
+		if (o._r_unitType._r_type!=MAGIC.clssDesc("SClassDesc")) MAGIC.inline(0xCC);
+		clss= (SClassDesc) o._r_unitType;
+		while (clss!=null) {
+			if (clss==clssType) return true;
+			clss=clss.parent;
+		}
+		if (asCast) MAGIC.inline(0xCC);
+		return false;
+	}
+	
+	public static void checkArrayStore(SArray dest, SArray newEntry) {
+		if (dest._r_dim>1) isArray(newEntry, dest._r_stdType, (SClassDesc) dest._r_unitType, dest._r_dim-1, true);
+		else if (dest._r_unitType==null) MAGIC.inline(0xCC);
+		else isInstance(newEntry, (SClassDesc) dest._r_unitType, true);
+	}
 }
