@@ -58,7 +58,8 @@ public class VideoController {
 				return;
 			}
 			default: {
-				if (ascii >= 0x20 && ascii < 0x7F) {
+				//printable ascii characters
+				if ((ascii&0xFF) >= 0x20 && (ascii&0xFF) < 0xFE) {
 					writeCharToMemory(ascii, color);
 					return;
 				}

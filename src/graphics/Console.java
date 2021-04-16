@@ -31,6 +31,10 @@ public class Console {
 		if (blinking) color |= ConsoleColors.BLINKING;
 	}
 	
+	public void setDefaultColor() {
+		setColor(ConsoleColors.FG_WHITE, ConsoleColors.BG_BLACK, false);
+	}
+	
 	public void setCursor(int newX, int newY) {
 		//TODO: what shall do with out of bounds args
 		VideoController.setPos(newX ,newY);

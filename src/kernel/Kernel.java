@@ -4,23 +4,21 @@ import graphics.Console;
 import graphics.ConsoleColors;
 import hardware.Keyboard;
 import hardware.KeyboardEvent;
+import sysutils.SystemTerminal;
 
 public class Kernel {
 	private static final int GDTBASE = 0x10000;
 	public static void main() {
 		MAGIC.doStaticInit();
 		Console c = new Console();
-		c.clearConsole();
+		SystemTerminal systerm = new SystemTerminal(c);
+		systerm.init();
 		Interrupts.prepareInterrupts();
 		//set interrupt flag ERST WENN PICs
 		MAGIC.inline(0xFB);
-		while(true){
-			Keyboard.processInputBuffer();
-			if (Keyboard.eventAvailable()) {
-				KeyboardEvent key = Keyboard.getNextKeyboardEvent();
-				c.print(key.KEYCODE);
-			}
-		}
+		
+		//SETUP COMPLETE
+		systerm.focus();
 	}
 
 	public static void testConsole() {
