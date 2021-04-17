@@ -10,8 +10,7 @@ public class Kernel {
 	private static final int GDTBASE = 0x10000;
 	public static void main() {
 		MAGIC.doStaticInit();
-		Console c = new Console();
-		SystemTerminal systerm = new SystemTerminal(c);
+		SystemTerminal systerm = new SystemTerminal();
 		systerm.init();
 		Interrupts.prepareInterrupts();
 		//set interrupt flag ERST WENN PICs
@@ -20,7 +19,7 @@ public class Kernel {
 		//SETUP COMPLETE
 		systerm.focus();
 	}
-
+	/*
 	public static void testConsole() {
 		Console c = new Console();
 		c.clearConsole();
@@ -47,7 +46,7 @@ public class Kernel {
 		c.println();
 		c.printHex((long)0x0123456789ABCDEFL);
 		while(true);
-	}
+	}*/
 	
 	public static void biosFun() {
 		BIOS.enterGraphicsMode();

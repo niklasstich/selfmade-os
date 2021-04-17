@@ -3,23 +3,24 @@ package graphics;
 import utils.TypeConv;
 
 //Basic console output
-public class Console {
-	private final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
-	private int color = ConsoleColors.DEFAULT_CONSOLE_COLOR;
-	private boolean cursor = true;
+public abstract class Console {
+	//scrollable console
+	private static char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
+	private static int color = ConsoleColors.DEFAULT_CONSOLE_COLOR;
+	private static boolean cursor = true;
 	
-	public void clearConsole() {
+	public static void clearConsole() {
 		VideoController.clearVideoMemory();
 		if(cursor)VideoController.updateCursor();
 	}
 	
-	public void disableCursor() {
+	public static void disableCursor() {
 		VideoController.disableCursor();
 	}
 	
 	//dynamische Methoden
 	
-	public void setColor(int fg, int bg, boolean blinking) {
+	public static void setColor(int fg, int bg, boolean blinking) {
 		//enforce sane defaults if args are out of bounds
 		if (fg < ConsoleColors.FG_BLACK || fg > ConsoleColors.FG_WHITE) {
 			fg = ConsoleColors.FG_WHITE;
@@ -31,31 +32,31 @@ public class Console {
 		if (blinking) color |= ConsoleColors.BLINKING;
 	}
 	
-	public void setDefaultColor() {
+	public static void setDefaultColor() {
 		setColor(ConsoleColors.FG_WHITE, ConsoleColors.BG_BLACK, false);
 	}
 	
-	public void setCursor(int newX, int newY) {
+	public static void setCursor(int newX, int newY) {
 		//TODO: what shall do with out of bounds args
 		VideoController.setPos(newX ,newY);
 		if (cursor) VideoController.updateCursor();
 	}
 	
-	public void print(char c) {
+	public static void print(char c) {
 		VideoController.handleChar(c, color);
 		if (cursor) VideoController.updateCursor();
 	}
 	
-	public void print(int x) {
+	public static void print(int x) {
 		print((long)x);
 	}
 	
-	public void print(long x) {
+	public static void print(long x) {
 		print(TypeConv.longToString(x));
 		if (cursor) VideoController.updateCursor();
 	}
 	
-	public void print(String str) {
+	public static void print(String str) {
 		if (str==null) return;
 		for(int i=0;i<str.length();i++) {
 			print(str.charAt(i));
@@ -65,7 +66,7 @@ public class Console {
 	
 	//https://stackoverflow.com/questions/9655181/how-to-convert-a-byte-array-to-a-hex-string-in-java
 	//1 byte
-	public void printHex(byte b) {
+	public static void printHex(byte b) {
 		char[] hexChars = new char[2];
 		int v = b & 0xFF;
 		hexChars[0] = HEX_ARRAY[v>>>4];
@@ -75,20 +76,20 @@ public class Console {
 	}
 	
 	//2 bytes
-	public void printHex(short s) {
+	public static void printHex(short s) {
 		printHex(TypeConv.toBytes(s));
 	}
 	
 	//4 bytes
-	public void printHex(int x) {
+	public static void printHex(int x) {
 		printHex(TypeConv.toBytes(x));
 	}
 	
-	public void printHex(long x) {
+	public static void printHex(long x) {
 		printHex(TypeConv.toBytes(x));
 	}
 	
-	public void printHex(byte[] b) {
+	public static void printHex(byte[] b) {
 		char[] hexChars = new char[b.length*2];
 		for (int i = 0; i<b.length; i++) {
 			int v = b[i] & 0xFF;
@@ -99,31 +100,31 @@ public class Console {
 		if (cursor) VideoController.updateCursor();
 	}
 	
-	public void println() {
+	public static void println() {
 		print("\n");
 		if (cursor) VideoController.updateCursor();
 	}
 	
 	//vorgegebene Methoden
-	public void println(char c) {
+	public static void println(char c) {
 		print(c);
 		println();
 		if (cursor) VideoController.updateCursor();
 	}
 	
-	public void println(int i) {
+	public static void println(int i) {
 		print(i);
 		println();
 		if (cursor) VideoController.updateCursor();
 	}
 	
-	public void println(long l) {
+	public static void println(long l) {
 		print(l);
 		println();
 		if (cursor) VideoController.updateCursor();
 	}
 	
-	public void println(String str) {
+	public static void println(String str) {
 		print(str);
 		println();
 		if (cursor) VideoController.updateCursor();

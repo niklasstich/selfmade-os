@@ -1,21 +1,12 @@
 package graphics;
 
+import utils.ASCIIControlSequences;
+
 //Handles low level access to Video components
 public class VideoController {
 	
 	//define constants for ASCII control sequences
-	private static final int ASCII_NULL = 0x0;
-	private static final int ASCII_BELL = 0x7;
-	private static final int ASCII_BACKSPACE = 0x8;
-	private static final int ASCII_HORIZONTAL_TAB = 0x9;
-	private static final int ASCII_LINE_FEED = 0xA;
-	private static final int ASCII_VERTICAL_TAB = 0xB;
-	private static final int ASCII_FORM_FEED = 0xC;
-	private static final int ASCII_CARRIAGE_RETURN = 0xD;
-	private static final int ASCII_EOF = 0x1A;
-	private static final int ASCII_ESCAPE = 0x1B;
 	
-	private static final int ASCII_SPACE = 0x20;
 	
 	private static final int TAB_SIZE = 4;
 	
@@ -26,34 +17,36 @@ public class VideoController {
 		if (videoMemoryPosition < 0 || videoMemoryPosition >= 2000) videoMemoryPosition = 0;
 		//TODO: support ascii_bell? that should be handled on the Console level
 		switch (ascii){
-			case ASCII_NULL: //nothing to do
-			case ASCII_VERTICAL_TAB: //not supported
-			case ASCII_BELL: //not supported
-			case ASCII_EOF: //not supported
-			case ASCII_ESCAPE: //no escape sequences on console
+			case ASCIIControlSequences.NULL: //nothing to do
+			case ASCIIControlSequences.VERTICAL_TAB: //not supported
+			case ASCIIControlSequences.BELL: //not supported
+			case ASCIIControlSequences.EOF: //not supported
+			case ASCIIControlSequences.ESCAPE: //no escape sequences on console
 			{
 				return;
 			}
-			case ASCII_BACKSPACE: {
+			case ASCIIControlSequences.BACKSPACE: {
 				videoMemoryPosition--;
+				vidMem.pos[videoMemoryPosition].ascii = (byte) ASCIIControlSequences.SPACE;
+				vidMem.pos[videoMemoryPosition].color = (byte)ConsoleColors.DEFAULT_CONSOLE_COLOR;
 				return;
 			}
-			case ASCII_HORIZONTAL_TAB: {
+			case ASCIIControlSequences.HORIZONTAL_TAB: {
 				//go to the next tab position, every TAB_SIZE positions
 				videoMemoryPosition += TAB_SIZE - (videoMemoryPosition % TAB_SIZE);
 				return;
 			}
-			case ASCII_LINE_FEED: {
+			case ASCIIControlSequences.LINE_FEED: {
 				//newline + carriage return
 				carriageReturn();
 				newLine();
 				return;
 			}//not supported
-			case ASCII_FORM_FEED: {
+			case ASCIIControlSequences.FORM_FEED: {
 				clearVideoMemory();
 				return;
 			}
-			case ASCII_CARRIAGE_RETURN: {
+			case ASCIIControlSequences.CARRIAGE_RETURN: {
 				carriageReturn();
 				return;
 			}
@@ -87,7 +80,7 @@ public class VideoController {
 		videoMemoryPosition = 0;
 		assert vidMem != null;
 		while(videoMemoryPosition<VideoMemory.VIDEO_MEMORY_LENGTH) {
-			vidMem.pos[videoMemoryPosition].ascii = (byte)ASCII_SPACE;
+			vidMem.pos[videoMemoryPosition].ascii = (byte) ASCIIControlSequences.SPACE;
 			vidMem.pos[videoMemoryPosition++].color = (byte)ConsoleColors.DEFAULT_CONSOLE_COLOR;
 		}
 		videoMemoryPosition = 0;

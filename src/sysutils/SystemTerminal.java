@@ -5,58 +5,59 @@ import graphics.ConsoleColors;
 import hardware.Key;
 import hardware.Keyboard;
 import hardware.KeyboardEvent;
+import sysutils.exec.Executable;
+import sysutils.exec.ExecutableStore;
+import utils.ASCIIControlSequences;
+import utils.ArrayUtils;
 
 public class SystemTerminal {
 	private static final int INPUT_BUFFER_SIZE = 320;
-	private Console console;
-	private char[] currentInputBuffer = new char[INPUT_BUFFER_SIZE];
-	public SystemTerminal(Console console) {
-		this.console = console;
-	}
+	private char[] inputBuffer = new char[INPUT_BUFFER_SIZE];
+	private int inputBufferPointer = 0;
 	
 	//display a nice splash and a prompt
 	public void init() {
-		console.setColor(ConsoleColors.FG_LIGHTCYAN, ConsoleColors.BG_BLACK, false);
-		console.clearConsole();
+		Console.setColor(ConsoleColors.FG_LIGHTCYAN, ConsoleColors.BG_BLACK, false);
+		Console.clearConsole();
 		//top line
 		printBlock(80);
 		//2nd line
 		printBlock(29);
-		console.print((char)0xC9);
+		Console.print((char)0xC9);
 		for (int i = 0; i < 20; i++) {
-			console.print((char)0xCD);
+			Console.print((char)0xCD);
 		}
-		console.print((char)0xBB);
+		Console.print((char)0xBB);
 		printBlock(29);
 		//middle line
 		printBlock(29);
-		console.print((char)0xBA);
-		console.print(" Welcome to ClubOS! ");
-		console.print((char)0xBA);
+		Console.print((char)0xBA);
+		Console.print(" Welcome to ClubOS! ");
+		Console.print((char)0xBA);
 		printBlock(29);
 		//4th line
 		printBlock(29);
-		console.print((char)0xC8);
+		Console.print((char)0xC8);
 		for (int i = 0; i < 20; i++) {
-			console.print((char)0xCD);
+			Console.print((char)0xCD);
 		}
-		console.print((char)0xBC);
+		Console.print((char)0xBC);
 		printBlock(29);
 		//bottom line
 		printBlock(80);
-		console.setDefaultColor();
+		Console.setDefaultColor();
 		
 		printPrompt();
 	}
 	
 	private void printBlock(int blocks) {
 		for (int i = 0; i < blocks; i++) {
-			console.print((char) 0xDB);
+			Console.print((char) 0xDB);
 		}
 	}
 	
 	private void printPrompt() {
-		console.print(">");
+		Console.print(">");
 	}
 	
 	//takes over control and starts handling keyboard inputs
@@ -65,11 +66,64 @@ public class SystemTerminal {
 			Keyboard.processInputBuffer();
 			if (Keyboard.eventAvailable()) {
 				KeyboardEvent kev = Keyboard.getNextKeyboardEvent();
-				switch (kev.KEYCODE) {
-					//TODO: handle all the different inputs that could be interesting to us
+				switch (kev.KEYCODE) { //special handling
+					case Key.BACKSPACE: {
+						if(inputBufferPointer>0) {
+							inputBuffer[--inputBufferPointer] = '\u0000'; //reset to zerovalue
+							Console.print((char) ASCIIControlSequences.BACKSPACE);
+							continue;
+						}
+					}
+					case Key.ENTER: {
+						if (!isBufferWhitespace()) { //buffer may contain a command, we have to check
+							//first, turn our buffer contents into a string and split it on spaces
+							String buf = String.compactString(inputBuffer);
+							String[] split = buf.split(new char[]{' '});
+							if (split.length > 0) {
+								Executable ex = ExecutableStore.fetchExecutable(split[0]);
+								if (ex!=null) {
+									String[] args = ArrayUtils.subArray(split, 1, split.length);
+									int ret = ex.execute(args);
+									if(ret!=0) {
+										printErrorCode(ret);
+									}
+								} else {
+									printExNotFound(split[0]);
+								}
+							}
+							
+						}
+						inputBuffer = new char[INPUT_BUFFER_SIZE];
+						inputBufferPointer = 0;
+						Console.print(ASCIIControlSequences.LINE_FEED);
+					}
+				}
+				if (kev.KEYCODE >= Key.SPACE && kev.KEYCODE <= Key.TILDE) { //printable ascii, straight up cast and push
+					inputBuffer[inputBufferPointer++] = (char) (kev.KEYCODE&0xFF);
+					Console.print((char)(kev.KEYCODE&0xFF));
+					continue;
 				}
 			}
 		}
+	}
+	
+	//returns whether or not the buffer only consists of whitespace,
+	public boolean isBufferWhitespace() {
+		int i = 0;
+		while(i < inputBufferPointer) {
+			if (inputBuffer[i] != ' ' && inputBuffer[i] != '\u0000') return false;
+			i++;
+		}
+		return true;
+	}
+	
+	private void printErrorCode(int error) {
+		//TODO: implement
+	}
+	
+	private void printExNotFound(String name) {
+		Console.print(ASCIIControlSequences.LINE_FEED);
+		Console.print("Couldn't find executable ".concat(name));
 	}
 	
 }
