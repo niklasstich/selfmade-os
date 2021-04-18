@@ -1,4 +1,4 @@
-package hardware;
+package hardware.keyboard;
 
 @SJC.IgnoreUnit
 public class QWERTZLayout extends KeyboardLayout{

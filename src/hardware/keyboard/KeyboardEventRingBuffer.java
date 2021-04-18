@@ -1,7 +1,4 @@
-package hardware;
-
-import graphics.Console;
-import hardware.KeyboardEvent;
+package hardware.keyboard;
 
 public class KeyboardEventRingBuffer {
 	private static final int DEFAULT_SIZE = 64;

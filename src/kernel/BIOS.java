@@ -6,10 +6,21 @@ public class BIOS {
 	private final static int BIOS_MEMORY = 0x60000;
 	private final static int BIOS_STKEND = BIOS_MEMORY+0x1000;
 	private final static int BIOS_STKBSE = BIOS_STKEND-0x28;
+	private final static int MEM_READ_BUF = 0x7E00;
 	
 	public static class BIOSRegs extends STRUCT {
 		public short DS, ES, FS, FLAGS;
 		public int EDI, ESI, EBP, ESP, EBX, EDX, ECX, EAX;
+	}
+	
+	public static class BIOSMemSeg {
+		public final long baseAddr, len;
+		public final int type;
+		BIOSMemSeg(long baseAddr, long len, int type) {
+			this.baseAddr = baseAddr;
+			this.len = len;
+			this.type = type;
+		}
 	}
 	
 	public final static BIOSRegs regs = (BIOSRegs)MAGIC.cast2Struct(BIOS_STKBSE);
@@ -204,5 +215,29 @@ public class BIOS {
 		BIOS.regs.EAX=0x0003;
 		BIOS.rint(0x10);
 		Console.resetConsole();
+	}
+	
+	//region specific BIOS functions
+	public static BIOSMemSeg getMemMap(int cInd) {
+		//function code
+		regs.EAX = 0x0000E820;
+		//signature - to verify correctness of call
+		regs.EDX = 0x534D4150;
+		//continuation
+		regs.EBX = cInd;
+		//buffer pointer
+		regs.EDI = MEM_READ_BUF;
+		//buffer size
+		regs.ECX = 20;
+		//call actual interrupt
+		rint(0x15);
+		
+		//check if successful
+		if (((regs.FLAGS & F_CARRY)&0xFFFF) != 0) {
+			Console.debug("getMemMap failed");
+			MAGIC.inline(0xCC);
+		}
+		//success, evaluate output
+		return new BIOSMemSeg(MAGIC.rMem64(MEM_READ_BUF), MAGIC.rMem64(MEM_READ_BUF + 8), MAGIC.rMem32(MEM_READ_BUF + 16));
 	}
 }

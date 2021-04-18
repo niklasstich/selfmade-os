@@ -1,18 +1,15 @@
 package kernel;
 
-import graphics.Console;
-import graphics.ConsoleColors;
-import hardware.Keyboard;
-import hardware.KeyboardEvent;
+import hardware.Time;
 import sysutils.SystemTerminal;
 
 public class Kernel {
 	private static final int GDTBASE = 0x10000;
 	public static void main() {
+		Interrupts.prepareInterrupts();
 		MAGIC.doStaticInit();
 		SystemTerminal systerm = new SystemTerminal();
 		systerm.init();
-		Interrupts.prepareInterrupts();
 		//set interrupt flag ERST WENN PICs
 		MAGIC.inline(0xFB);
 		

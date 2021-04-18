@@ -16,7 +16,7 @@ public class VideoController {
 	protected static void handleChar(int ascii, int color) {
 		if (videoMemoryPosition < 0 || videoMemoryPosition >= 2000) videoMemoryPosition = 0;
 		//TODO: support ascii_bell? that should be handled on the Console level
-		switch (ascii){
+		switch ((char)ascii){
 			case ASCIIControlSequences.NULL: //nothing to do
 			case ASCIIControlSequences.VERTICAL_TAB: //not supported
 			case ASCIIControlSequences.BELL: //not supported

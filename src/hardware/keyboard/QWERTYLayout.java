@@ -1,6 +1,4 @@
-package hardware;
-
-import graphics.Console;
+package hardware.keyboard;
 
 public class QWERTYLayout extends KeyboardLayout {
     @Override

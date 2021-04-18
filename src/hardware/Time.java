@@ -1,4 +1,4 @@
-package kernel;
+package hardware;
 
 
 public class Time {
@@ -7,7 +7,7 @@ public class Time {
 	public static long getSystemTime() {
 		return systemTime;
 	}
-	static void increaseSystemTime(long ms) {
+	public static void increaseSystemTime(long ms) {
 		systemTime += ms;
 		if(systemTime<0)
 			systemTime = 0;

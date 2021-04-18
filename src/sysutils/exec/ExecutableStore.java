@@ -1,20 +1,20 @@
 package sysutils.exec;
 
 import graphics.Console;
+import graphics.ConsoleColors;
 import utils.ASCIIControlSequences;
 
 //executablestore is itself an executable, because it can list all executables to the console
 public class ExecutableStore extends Executable {
 	static {
+		//first initialize the array, otherwise we shit the bed
+		executables = new Executable[1024];
 		addExecutable(new ExecutableStore());
 	}
 	
 	private static Executable[] executables;
 	private static int insertionIndex;
 	
-	static {
-		executables = new Executable[1024];
-	}
 	
 	public static void addExecutable(Executable ex) {
 		executables[insertionIndex++] = ex;
@@ -31,10 +31,12 @@ public class ExecutableStore extends Executable {
 	
 	@Override
 	public int execute(String[] args) {
-		Console.print(ASCIIControlSequences.LINE_FEED);
+		Console.setColor(ConsoleColors.FG_GREEN, ConsoleColors.BG_BLACK, false);
 		for (int i = 0; i < insertionIndex; i++) {
 			Console.print(executables[i].getName().concat(" "));
 		}
+		Console.print('\n');
+		Console.setDefaultColor();
 		return 0;
 	}
 	

@@ -1,4 +1,4 @@
-package hardware;
+package hardware.keyboard;
 
 public class KeyboardEvent {
 	//MODIFIER

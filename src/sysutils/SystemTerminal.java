@@ -2,9 +2,9 @@ package sysutils;
 
 import graphics.Console;
 import graphics.ConsoleColors;
-import hardware.Key;
-import hardware.Keyboard;
-import hardware.KeyboardEvent;
+import hardware.keyboard.Key;
+import hardware.keyboard.Keyboard;
+import hardware.keyboard.KeyboardEvent;
 import sysutils.exec.Executable;
 import sysutils.exec.ExecutableStore;
 import utils.ASCIIControlSequences;
@@ -71,14 +71,15 @@ public class SystemTerminal {
 						if(inputBufferPointer>0) {
 							inputBuffer[--inputBufferPointer] = '\u0000'; //reset to zerovalue
 							Console.print((char) ASCIIControlSequences.BACKSPACE);
-							continue;
 						}
+						continue;
 					}
 					case Key.ENTER: {
+						Console.print(ASCIIControlSequences.LINE_FEED);
 						if (!isBufferWhitespace()) { //buffer may contain a command, we have to check
 							//first, turn our buffer contents into a string and split it on spaces
 							String buf = String.compactString(inputBuffer);
-							String[] split = buf.split(new char[]{' '});
+							String[] split = buf.split(' ');
 							if (split.length > 0) {
 								Executable ex = ExecutableStore.fetchExecutable(split[0]);
 								if (ex!=null) {
@@ -93,13 +94,14 @@ public class SystemTerminal {
 							}
 							
 						}
+						printPrompt();
 						inputBuffer = new char[INPUT_BUFFER_SIZE];
 						inputBufferPointer = 0;
-						Console.print(ASCIIControlSequences.LINE_FEED);
 					}
 				}
 				if (kev.KEYCODE >= Key.SPACE && kev.KEYCODE <= Key.TILDE) { //printable ascii, straight up cast and push
-					inputBuffer[inputBufferPointer++] = (char) (kev.KEYCODE&0xFF);
+					inputBuffer[inputBufferPointer] = (char) (kev.KEYCODE&0xFF);
+					inputBufferPointer++;
 					Console.print((char)(kev.KEYCODE&0xFF));
 					continue;
 				}
@@ -122,8 +124,7 @@ public class SystemTerminal {
 	}
 	
 	private void printExNotFound(String name) {
-		Console.print(ASCIIControlSequences.LINE_FEED);
-		Console.print("Couldn't find executable ".concat(name));
+		Console.print("no executable ".concat(name).concat(" found\n"));
 	}
 	
 }

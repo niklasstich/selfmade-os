@@ -5,9 +5,13 @@ import utils.TypeConv;
 //Basic console output
 public abstract class Console {
 	//scrollable console
-	private static char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
+	private static char[] HEX_ARRAY;
 	private static int color = ConsoleColors.DEFAULT_CONSOLE_COLOR;
 	private static boolean cursor = true;
+	
+	static {
+		HEX_ARRAY = "0123456789ABCDEF".toCharArray();
+	}
 	
 	public static void clearConsole() {
 		VideoController.clearVideoMemory();

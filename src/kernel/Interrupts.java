@@ -1,12 +1,12 @@
 package kernel;
 
 import graphics.Console;
-import graphics.ConsoleColors;
-import hardware.Keyboard;
+import hardware.Time;
+import hardware.keyboard.Keyboard;
 
 public class Interrupts {
 	//segment start
-	private static final int IDT_START = 0x07E00;
+	private static final int IDT_START = 0x09000;
 	private final static int MASTER = 0x20, SLAVE = 0xA0;
 	
 	public static void prepareInterrupts() {

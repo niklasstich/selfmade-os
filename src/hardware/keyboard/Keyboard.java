@@ -1,7 +1,5 @@
-package hardware;
+package hardware.keyboard;
 
-
-import graphics.Console;
 
 public class Keyboard {
 	private static KeyboardLayout layout = new QWERTYLayout();

@@ -1,4 +1,4 @@
-package hardware;
+package hardware.keyboard;
 
 /** @noinspection unused*/
 public class Key {
