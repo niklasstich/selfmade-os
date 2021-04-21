@@ -1,10 +1,12 @@
 package hardware.pci;
 
 public class PCIDevice {
-	final int devID, vendorID, status, command;
-	final int baseClass, subClass, devInterface, revision, BIST, header, latency, CLG;
+	public final int devID, vendorID, status, command;
+	public final int baseClass, subClass, devInterface, revision, BIST, header, latency, CLG;
 	
-	public PCIDevice(int devID, int vendorID, int status, int command, int baseClass, int subClass, int devInterface, int revision, int bist, int header, int latency, int clg) {
+	public final int bus, device, function;
+	
+	public PCIDevice(int devID, int vendorID, int status, int command, int baseClass, int subClass, int devInterface, int revision, int bist, int header, int latency, int clg, int bus, int device, int function) {
 		this.devID = devID;
 		this.vendorID = vendorID;
 		this.status = status;
@@ -17,5 +19,8 @@ public class PCIDevice {
 		this.header = header;
 		this.latency = latency;
 		this.CLG = clg;
+		this.bus = bus;
+		this.device = device;
+		this.function = function;
 	}
 }

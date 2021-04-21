@@ -39,6 +39,7 @@ public class TypeConv {
 		//ensure we have a positive number so the modulo doesn't mess up
 		long lpos;
 		if (l<0) lpos = l * -1;
+		if (l==0) return "0";
 		else lpos = l;
 		while(lpos>0) {
 			output[index--] = (char) (lpos%10 +'0');
