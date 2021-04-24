@@ -105,7 +105,10 @@ public class Interrupts {
 	//hex 03 Breakpoint
 	@SJC.Interrupt
 	private static void breakpointHandler() {
-		Console.debug("breakpoint");
+		int ebp = 0;
+		MAGIC.inline(0x89,0x6D);
+		MAGIC.inlineOffset(1,ebp);
+		ErrorScreen.BreakpointScreen(ebp);
 		while (true);
 	}
 	//hex 04 INTO (overflow)

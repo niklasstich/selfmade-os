@@ -11,3 +11,5 @@ zip/
 phasen/
 picos/
 extracode/
+._sync*
+.owncloudsync.log
