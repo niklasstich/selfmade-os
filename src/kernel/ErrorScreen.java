@@ -23,7 +23,7 @@ public class ErrorScreen {
 			ebp = MAGIC.rMem32(ebp);
 			eip = MAGIC.rMem32(ebp + 4);
 			
-		} while (ebp <= STACK_BEGINNING);
+		} while (ebp <= STACK_BEGINNING && ebp > 0);
 	}
 	
 	//fills the entire screen with a red color
