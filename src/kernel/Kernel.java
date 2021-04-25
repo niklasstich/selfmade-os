@@ -1,11 +1,14 @@
 package kernel;
 
+import graphics.Console;
 import hardware.Time;
+import rte.DynamicRuntime;
 import sysutils.SystemTerminal;
 
 public class Kernel {
 	private static final int GDTBASE = 0x10000;
 	public static void main() {
+		DynamicRuntime.initializeEmptyObjects();
 		Interrupts.prepareInterrupts();
 		MAGIC.doStaticInit();
 		SystemTerminal systerm = new SystemTerminal();

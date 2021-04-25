@@ -1,6 +1,64 @@
 package rte;
+
+import graphics.Console;
+import kernel.BIOS;
+
 public class DynamicRuntime {
+	private static SEmptyObject firstEObj = null;
+	
+	public static void initializeEmptyObjects() {
+		//get memsegs from bios and evaluate if it is free
+		int conIndex = 0;
+		do {
+			BIOS.writeMemMapToBuff(conIndex);
+			conIndex = BIOS.regs.EBX;
+			
+			//if segment is free, allocate empty object
+			int memSegType = MAGIC.rMem32(BIOS.MEM_READ_BUF+16);
+			if(memSegType==1) {
+				int baseAdd = (int) MAGIC.rMem64(BIOS.MEM_READ_BUF);
+				int len = (int) MAGIC.rMem64(BIOS.MEM_READ_BUF+8);
+				if (baseAdd>BIOS.BIOS_ADDR_MAX) {
+					
+					int maxAddress = baseAdd+len-1;
+					//get imageBase first object and go through the next pointer until we find no more objects
+					Object obj = MAGIC.cast2Obj(MAGIC.imageBase+16);
+					while (obj._r_next!=null) {
+						obj = obj._r_next;
+					}
+					
+					int nextFreeAddress = MAGIC.cast2Ref(obj)+obj._r_scalarSize;
+					//null initialization
+					for(int i = nextFreeAddress;i<=maxAddress;i++) {
+						MAGIC.wMem8(i, (byte) 0);
+					}
+					
+					Object eObj = MAGIC.cast2Obj(nextFreeAddress);
+					nextFreeAddress+=12;
+					//set properties correctly
+					MAGIC.assign(eObj._r_relocEntries, 3);
+					MAGIC.assign(eObj._r_type, MAGIC.clssDesc("SEmptyObject"));
+					MAGIC.assign(eObj._r_scalarSize, maxAddress-nextFreeAddress+1);
+					
+					//correct previous objects next pointer
+					MAGIC.assign(obj._r_next, (Object) eObj);
+					
+					if (firstEObj==null) {
+						firstEObj = (SEmptyObject) eObj;
+					} else {
+						SEmptyObject temp = firstEObj;
+						while (temp.nextEmptyObject!=null) {
+							temp = temp.nextEmptyObject;
+						}
+						MAGIC.assign(temp.nextEmptyObject, (SEmptyObject)eObj);
+					}
+				}
+			}
+		} while(conIndex!=0);
+	}
+	
 	public static Object newInstance(int scS, int rlE, SClassDesc type) {
+		/*
 		int objPtr = MAGIC.imageBase;
 		//offset für ptr zum nächsten Objekt
 		objPtr+=16;
@@ -21,7 +79,7 @@ public class DynamicRuntime {
 			objPtr += 4 - (objPtr % 4);
 		}
 		for(int i = objPtr; i<objPtr+scS+rlE*4+4;i++) {
-			MAGIC.wMem32(i, 0); //initialize with 0
+			MAGIC.wMem8(i, (byte)0); //initialize with 0
 		}
 		objPtr += rlE*4;//offset object pointer to make space for the relocs
 		Object newOb = MAGIC.cast2Obj(objPtr);//we now have the correct address for the new object in objPtr
@@ -29,6 +87,34 @@ public class DynamicRuntime {
 		MAGIC.assign(newOb._r_relocEntries, rlE);
 		MAGIC.assign(newOb._r_scalarSize, scS);
 		MAGIC.assign(newOb._r_type, type);
+		return newOb;*/
+		
+		//find emptyobject that can fit new instance
+		SEmptyObject eObj = firstEObj;
+		int newObjLen = ((scS+3)&~3) + 4*rlE+16;
+		while(true) {
+			if ((eObj._r_scalarSize-8)>= newObjLen){
+				break;
+			}
+			if(eObj.nextEmptyObject == null) {
+				MAGIC.inline(0xCC);
+			}
+			eObj = eObj.nextEmptyObject;
+		}
+		
+		//calculate new address and subtract object size from eObj scalarsize
+		int newObjAddr = MAGIC.cast2Ref(eObj)+eObj._r_scalarSize-((scS+3)&~3);
+		MAGIC.assign(eObj._r_scalarSize, eObj._r_scalarSize-newObjLen);
+		
+		//assign the actual object
+		Object newOb = MAGIC.cast2Obj(newObjAddr);
+		MAGIC.assign(newOb._r_relocEntries, rlE);
+		MAGIC.assign(newOb._r_scalarSize, scS);
+		MAGIC.assign(newOb._r_type, type);
+		
+		//correct next pointers
+		MAGIC.assign(newOb._r_next, eObj._r_next);
+		MAGIC.assign(eObj._r_next, newOb);
 		return newOb;
 	}
 	//creates a new array object
@@ -81,7 +167,7 @@ public class DynamicRuntime {
 			if (check==dest) return true; //passende Klasse gefunden
 			check=check.parent; //Elternklasse versuchen
 		}
-		if (asCast) while(true); //Konvertierungsfehler
+		if (asCast) MAGIC.inline(0xCC); //Konvertierungsfehler
 		return false; //Objekt passt nicht zu Klasse
 	}
 	public static SIntfMap isImplementation(Object o, SIntfDesc dest,

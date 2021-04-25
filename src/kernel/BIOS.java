@@ -6,7 +6,8 @@ public class BIOS {
 	private final static int BIOS_MEMORY = 0x60000;
 	private final static int BIOS_STKEND = BIOS_MEMORY+0x1000;
 	private final static int BIOS_STKBSE = BIOS_STKEND-0x28;
-	private final static int MEM_READ_BUF = 0x7E00;
+	public final static int MEM_READ_BUF = 0x7E00;
+	public final static int BIOS_ADDR_MAX = 0xFFFFF;
 	
 	public static class BIOSRegs extends STRUCT {
 		public short DS, ES, FS, FLAGS;
@@ -219,6 +220,12 @@ public class BIOS {
 	
 	//region specific BIOS functions
 	public static BIOSMemSeg getMemMap(int cInd) {
+		writeMemMapToBuff(cInd);
+		//success, evaluate output
+		return new BIOSMemSeg(MAGIC.rMem64(MEM_READ_BUF), MAGIC.rMem64(MEM_READ_BUF + 8), MAGIC.rMem32(MEM_READ_BUF + 16));
+	}
+	
+	public static void writeMemMapToBuff(int cInd) {
 		//function code
 		regs.EAX = 0x0000E820;
 		//signature - to verify correctness of call
@@ -237,7 +244,5 @@ public class BIOS {
 			Console.debug("getMemMap failed");
 			MAGIC.inline(0xCC);
 		}
-		//success, evaluate output
-		return new BIOSMemSeg(MAGIC.rMem64(MEM_READ_BUF), MAGIC.rMem64(MEM_READ_BUF + 8), MAGIC.rMem32(MEM_READ_BUF + 16));
 	}
 }
