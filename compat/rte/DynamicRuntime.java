@@ -17,41 +17,91 @@ public class DynamicRuntime {
 			int memSegType = MAGIC.rMem32(BIOS.MEM_READ_BUF+16);
 			if(memSegType==1) {
 				int baseAdd = (int) MAGIC.rMem64(BIOS.MEM_READ_BUF);
-				int len = (int) MAGIC.rMem64(BIOS.MEM_READ_BUF+8);
+				//dont touch any addresses in bios addr room, we don't know what exactly lies there
 				if (baseAdd>BIOS.BIOS_ADDR_MAX) {
-					
+					int len = (int) MAGIC.rMem64(BIOS.MEM_READ_BUF+8);
 					int maxAddress = baseAdd+len-1;
-					//get imageBase first object and go through the next pointer until we find no more objects
-					Object obj = MAGIC.cast2Obj(MAGIC.imageBase+16);
-					while (obj._r_next!=null) {
-						obj = obj._r_next;
-					}
-					
-					int nextFreeAddress = MAGIC.cast2Ref(obj)+obj._r_scalarSize;
-					//null initialization
-					for(int i = nextFreeAddress;i<=maxAddress;i++) {
-						MAGIC.wMem8(i, (byte) 0);
-					}
-					
-					Object eObj = MAGIC.cast2Obj(nextFreeAddress);
-					nextFreeAddress+=12;
-					//set properties correctly
-					MAGIC.assign(eObj._r_relocEntries, 3);
-					MAGIC.assign(eObj._r_type, MAGIC.clssDesc("SEmptyObject"));
-					MAGIC.assign(eObj._r_scalarSize, maxAddress-nextFreeAddress+1);
-					
-					//correct previous objects next pointer
-					MAGIC.assign(obj._r_next, (Object) eObj);
-					
-					if (firstEObj==null) {
-						firstEObj = (SEmptyObject) eObj;
-					} else {
-						SEmptyObject temp = firstEObj;
-						while (temp.nextEmptyObject!=null) {
-							temp = temp.nextEmptyObject;
+					//2 cases: either the imageBase object lies in the memory segment, in which case we have to
+					//take the object and chase the r_next chain until we get to the end of it
+					//or we get a memory segment which doesn't contain it, and then we have to be careful to not f up
+					//the r_next chain that must point to the new eObj
+					int SJCObjAddr = MAGIC.imageBase+16;
+					if (SJCObjAddr >= baseAdd && SJCObjAddr <= maxAddress) { //sjc obj in segment
+						//get imageBase first object and go through the next pointer until we find no more objects
+						Object obj = MAGIC.cast2Obj(SJCObjAddr);
+						while (obj._r_next!=null) {
+							obj = obj._r_next;
 						}
-						MAGIC.assign(temp.nextEmptyObject, (SEmptyObject)eObj);
+						
+						int nextFreeAddress = MAGIC.cast2Ref(obj)+obj._r_scalarSize;
+						for (int i = nextFreeAddress; i < nextFreeAddress+20; i++) {
+							MAGIC.wMem8(i, (byte) 0);
+						}
+						//we add 12 bytes to make space for the 3 relocs it contains
+						nextFreeAddress+=12;
+						
+						//nextFreeAddress is now the correct address to allocate the object at
+						Object eObj = MAGIC.cast2Obj(nextFreeAddress);
+						//we set relocsEntries, type and scalarsize
+						MAGIC.assign(eObj._r_relocEntries, 3);
+						MAGIC.assign(eObj._r_type, MAGIC.clssDesc("SEmptyObject"));
+						//scalarSize is the maximum address minus the current address plus 1
+						MAGIC.assign(eObj._r_scalarSize, maxAddress-nextFreeAddress+1);
+						
+						//set old objects next pointer to eObj
+						MAGIC.assign(obj._r_next, (Object) eObj);
+						
+						//remember the first eObj we set so it can point to future eObjs
+						if (firstEObj==null) {
+							firstEObj = (SEmptyObject) eObj;
+						} else {
+							SEmptyObject temp = firstEObj;
+							while (temp.nextEmptyObject!=null) {
+								temp = temp.nextEmptyObject;
+							}
+							MAGIC.assign(temp.nextEmptyObject, (SEmptyObject)eObj);
+							MAGIC.assign(temp._r_next, MAGIC.cast2Obj(SJCObjAddr));
+						}
+					} else { //no sjc objs in segment
+						//because there shouldn't be an preexisting objects in this segment, we can just use the baseAddress
+						//of the segment as the baseAddress of our eObj
+						int nextFreeAddress = baseAdd;
+						for (int i = nextFreeAddress; i < nextFreeAddress+20; i++) {
+							MAGIC.wMem8(i, (byte) 0);
+						}
+						//we add 12 bytes to make space for the 3 relocs it contains
+						nextFreeAddress+=12;
+						Object eObj = MAGIC.cast2Obj(nextFreeAddress);
+						//we set relocsEntries, type and scalarsize
+						MAGIC.assign(eObj._r_relocEntries, 3);
+						MAGIC.assign(eObj._r_type, MAGIC.clssDesc("SEmptyObject"));
+						//scalarSize is the maximum address minus the current address plus 1
+						MAGIC.assign(eObj._r_scalarSize, maxAddress-nextFreeAddress+1);
+						
+						//we have our object, now we must correct the r_next hierarchy
+						//if there is no firstEObj, we must once again follow the sjc object pointer in the base image
+						//otherwise, we can just point the last eObj in the hierarchy of firstEObj to this new eObj,
+						//because it is guaranteed to be the last object in the overall object hierarchy
+						if (firstEObj == null) {
+							firstEObj = (SEmptyObject) eObj;
+							//get base image object
+							Object obj = MAGIC.cast2Obj(SJCObjAddr);
+							while (obj._r_next!=null) {
+								obj = obj._r_next;
+							}
+							MAGIC.assign(obj._r_next, eObj);
+						} else {
+							//get first eobj
+							SEmptyObject temp = firstEObj;
+							//traverse hierarchy
+							while (temp.nextEmptyObject != null) {
+								temp = temp.nextEmptyObject;
+							}
+							MAGIC.assign(temp.nextEmptyObject, (SEmptyObject)eObj);
+							MAGIC.assign(temp._r_next, eObj);
+						}
 					}
+					
 				}
 			}
 		} while(conIndex!=0);
@@ -93,18 +143,23 @@ public class DynamicRuntime {
 		SEmptyObject eObj = firstEObj;
 		int newObjLen = ((scS+3)&~3) + 4*rlE+16;
 		while(true) {
+			//save 8 bytes of the scalar for the objects own scalars
 			if ((eObj._r_scalarSize-8)>= newObjLen){
 				break;
 			}
 			if(eObj.nextEmptyObject == null) {
-				MAGIC.inline(0xCC);
+				MAGIC.inline(0xCC); //out of memory
 			}
-			eObj = eObj.nextEmptyObject;
+			eObj = eObj.nextEmptyObject; //traverse
 		}
 		
 		//calculate new address and subtract object size from eObj scalarsize
 		int newObjAddr = MAGIC.cast2Ref(eObj)+eObj._r_scalarSize-((scS+3)&~3);
 		MAGIC.assign(eObj._r_scalarSize, eObj._r_scalarSize-newObjLen);
+		//the address from which we have to start nulling memory
+		for (int i = newObjAddr-(rlE*4); i < newObjAddr+scS; i++) {
+			MAGIC.wMem8(i, (byte)0);
+		}
 		
 		//assign the actual object
 		Object newOb = MAGIC.cast2Obj(newObjAddr);

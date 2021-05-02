@@ -1,6 +1,7 @@
 package kernel;
 
 import graphics.Console;
+import graphics.ConsoleColors;
 import hardware.Time;
 import rte.DynamicRuntime;
 import sysutils.SystemTerminal;
@@ -11,6 +12,7 @@ public class Kernel {
 		DynamicRuntime.initializeEmptyObjects();
 		Interrupts.prepareInterrupts();
 		MAGIC.doStaticInit();
+		//testConsole();
 		SystemTerminal systerm = new SystemTerminal();
 		systerm.init();
 		//set interrupt flag ERST WENN PICs
@@ -19,34 +21,34 @@ public class Kernel {
 		//SETUP COMPLETE
 		systerm.focus();
 	}
-	/*
+	
 	public static void testConsole() {
-		Console c = new Console();
-		c.clearConsole();
-		c.println("hallo :)");
-		c.setColor(ConsoleColors.FG_BLUE, ConsoleColors.BG_GREEN, false);
-		c.println();
-		c.println('a');
-		c.setCursor(5, 4);
-		c.println("ich bin versetzt :o");
-		c.print(12345);
-		c.print(-1234);
-		c.print(-678L);
-		c.println();
-		c.setColor(ConsoleColors.FG_WHITE, ConsoleColors.BG_BLACK, false);
-		c.println("rueckwaerts".reverse());
-		c.println(-12839L);
-		c.println(4321);
-		c.println();
-		c.printHex((byte)0xF2);
-		c.println();
-		c.printHex((short)0x4F0F); //???
-		c.println();
-		c.printHex((int)0xFFFF2442);
-		c.println();
-		c.printHex((long)0x0123456789ABCDEFL);
+		
+		Console.clearConsole();
+		Console.println("hallo :)");
+		Console.setColor(ConsoleColors.FG_BLUE, ConsoleColors.BG_GREEN, false);
+		Console.println();
+		Console.println('a');
+		Console.setCursor(5, 4);
+		Console.println("ich bin versetzt :o");
+		Console.print(12345);
+		Console.print(-1234);
+		Console.print(-678L);
+		Console.println();
+		Console.setColor(ConsoleColors.FG_WHITE, ConsoleColors.BG_BLACK, false);
+		Console.println("rueckwaerts".reverse());
+		Console.println(-12839L);
+		Console.println(4321);
+		Console.println();
+		Console.printHex((byte)0xF2);
+		Console.println();
+		Console.printHex((short)0x4F0F); //???
+		Console.println();
+		Console.printHex((int)0xFFFF2442);
+		Console.println();
+		Console.printHex((long)0x0123456789ABCDEFL);
 		while(true);
-	}*/
+	}
 	
 	public static void biosFun() {
 		BIOS.enterGraphicsMode();
