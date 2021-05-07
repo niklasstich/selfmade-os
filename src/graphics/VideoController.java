@@ -6,10 +6,7 @@ import utils.ASCIIControlSequences;
 public class VideoController {
 	
 	//define constants for ASCII control sequences
-	
-	
 	private static final int TAB_SIZE = 4;
-	
 	private static int videoMemoryPosition = 0;
 	private static final VideoMemory vidMem = (VideoMemory) MAGIC.cast2Struct(VideoMemory.VIDEO_MEMORY_STARTPOS);
 	//Writes a VideoChar to the graphics output
@@ -27,8 +24,7 @@ public class VideoController {
 			}
 			case ASCIIControlSequences.BACKSPACE: {
 				videoMemoryPosition--;
-				vidMem.pos[videoMemoryPosition].ascii = (byte) ASCIIControlSequences.SPACE;
-				vidMem.pos[videoMemoryPosition].color = (byte)ConsoleColors.DEFAULT_CONSOLE_COLOR;
+				setCharacterAtPos(videoMemoryPosition, ASCIIControlSequences.SPACE, ConsoleColors.DEFAULT_CONSOLE_COLOR);
 				return;
 			}
 			case ASCIIControlSequences.HORIZONTAL_TAB: {
@@ -62,26 +58,20 @@ public class VideoController {
 	//inline for performance?
 	@SJC.Inline
 	private static void writeCharToMemory(int as, int cl) {
-		assert vidMem != null;
-		vidMem.pos[videoMemoryPosition].ascii = (byte)as;
-		vidMem.pos[videoMemoryPosition++].color = (byte)cl;
+		setCharacterAtPos(videoMemoryPosition, as, cl);
+		videoMemoryPosition++;
 	}
 	
-	protected static void writeCharDirectly(int as, int x, int y, int cl) {
-		vidMem.pos[x+y*VideoMemory.VIDEO_MEMORY_COLUMNS].ascii = (byte)as;
-		vidMem.pos[x+y*VideoMemory.VIDEO_MEMORY_COLUMNS].color = (byte)cl;
-	}
+	protected static void writeCharDirectly(int as, int x, int y, int cl) { setCharacterAtPos(x+y*VideoMemory.VIDEO_MEMORY_COLUMNS, as, cl); }
 	
-	protected static void writeCharDebug(int as, int cl) {
-		writeCharToMemory(as, cl);
-	}
+	protected static void writeCharDebug(int as, int cl) { writeCharToMemory(as, cl); }
 	
 	protected static void clearVideoMemory() {
 		videoMemoryPosition = 0;
 		assert vidMem != null;
 		while(videoMemoryPosition<VideoMemory.VIDEO_MEMORY_LENGTH) {
-			vidMem.pos[videoMemoryPosition].ascii = (byte) ASCIIControlSequences.SPACE;
-			vidMem.pos[videoMemoryPosition++].color = (byte)ConsoleColors.DEFAULT_CONSOLE_COLOR;
+			setCharacterAtPos(videoMemoryPosition, ASCIIControlSequences.SPACE, ConsoleColors.DEFAULT_CONSOLE_COLOR);
+			videoMemoryPosition++;
 		}
 		videoMemoryPosition = 0;
 	}
@@ -110,4 +100,13 @@ public class VideoController {
 		MAGIC.wIOs8(0x3D4, (byte)0x0A);
 		MAGIC.wIOs8(0x3D5, (byte)0x20);
 	}
+	
+	@SJC.Inline
+	private static void setCharacterAtPos(int pos, int as, int cl) {
+		vidMem.pos[pos].ascii = (byte)as;
+		vidMem.pos[pos].color = (byte)cl;
+		
+	}
+	
+	
 }

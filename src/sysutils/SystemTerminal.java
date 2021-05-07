@@ -96,6 +96,7 @@ public class SystemTerminal {
 						}
 						clearInputBuffer();
 						printPrompt();
+						continue;
 					}
 				}
 				if ((kev.KEYCODE == Key.D || kev.KEYCODE == Key.d)&& kev.CONTROL && kev.SHIFT) { //breakpoint
