@@ -169,8 +169,8 @@ public class QWERTYLayout extends KeyboardLayout {
                 return Key.SEMICOLON;
             case 0x28:
                 if (upperCase)
-                    return Key.SINGLE_QUOTE;
-                return Key.QUOTATION_MARK;
+                    return Key.QUOTATION_MARK;
+                return Key.SINGLE_QUOTE;
             case 0x29:
                 if (upperCase)
                     return Key.TILDE;
