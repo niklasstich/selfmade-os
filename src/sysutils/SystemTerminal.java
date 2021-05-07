@@ -94,10 +94,18 @@ public class SystemTerminal {
 							}
 							
 						}
+						clearInputBuffer();
 						printPrompt();
-						inputBuffer = new char[INPUT_BUFFER_SIZE];
-						inputBufferPointer = 0;
 					}
+				}
+				if ((kev.KEYCODE == Key.D || kev.KEYCODE == Key.d)&& kev.CONTROL && kev.SHIFT) { //breakpoint
+					MAGIC.inline(0xCC);
+				}
+				if ((kev.KEYCODE == Key.C || kev.KEYCODE == Key.c) && kev.CONTROL) { //clear line
+					clearInputBuffer();
+					Console.print("^C\n");
+					printPrompt();
+					continue;
 				}
 				if (kev.KEYCODE >= Key.SPACE && kev.KEYCODE <= Key.TILDE) { //printable ascii, straight up cast and push
 					inputBuffer[inputBufferPointer] = (char) (kev.KEYCODE&0xFF);
@@ -127,4 +135,10 @@ public class SystemTerminal {
 		Console.print("no executable ".concat(name).concat(" found\n"));
 	}
 	
+	private void clearInputBuffer() {
+		for (int i = 0; i<INPUT_BUFFER_SIZE; i++) {
+			inputBuffer[i] = 0;
+		}
+		inputBufferPointer = 0;
+	}
 }

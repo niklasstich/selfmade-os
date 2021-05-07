@@ -21,6 +21,10 @@ public class DynamicRuntime {
 				if (baseAdd>BIOS.BIOS_ADDR_MAX) {
 					//TODO: check if we even have enough space for the emptyObj + another basic object
 					int len = (int) MAGIC.rMem64(BIOS.MEM_READ_BUF+8);
+					//if len is less or exactly the size of an empty object, don't even bother creating an object
+					if (len<=MAGIC.getInstScalarSize("SEmptyObject")+MAGIC.getInstRelocEntries("SEmptyObject")*4) {
+						continue;
+					}
 					int maxAddress = baseAdd+len-1;
 					//2 cases: either the imageBase object lies in the memory segment, in which case we have to
 					//take the object and chase the r_next chain until we get to the end of it
@@ -146,8 +150,7 @@ public class DynamicRuntime {
 		int newObjLen = ((scS+3)&~3) + 4*rlE+16;
 		while(true) {
 			//save 8 bytes of the scalar for the objects own scalars
-			//TODO: use MAGIC.getInstScalarSize (or whatever it might be called)
-			if ((eObj._r_scalarSize-8)>= newObjLen){
+			if ((eObj._r_scalarSize-MAGIC.getInstScalarSize("SEmptyObject"))>= newObjLen){
 				break;
 			}
 			//TODO: implement eObj is kil for when we can remove the eObj to fit (20 bytes per eObj!)
