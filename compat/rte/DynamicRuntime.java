@@ -19,6 +19,7 @@ public class DynamicRuntime {
 				int baseAdd = (int) MAGIC.rMem64(BIOS.MEM_READ_BUF);
 				//dont touch any addresses in bios addr room, we don't know what exactly lies there
 				if (baseAdd>BIOS.BIOS_ADDR_MAX) {
+					//TODO: check if we even have enough space for the emptyObj + another basic object
 					int len = (int) MAGIC.rMem64(BIOS.MEM_READ_BUF+8);
 					int maxAddress = baseAdd+len-1;
 					//2 cases: either the imageBase object lies in the memory segment, in which case we have to
@@ -38,6 +39,7 @@ public class DynamicRuntime {
 							MAGIC.wMem8(i, (byte) 0);
 						}
 						//we add 12 bytes to make space for the 3 relocs it contains
+						//TODO: change to MAGIC.getInstRelocEntries
 						nextFreeAddress+=12;
 						
 						//nextFreeAddress is now the correct address to allocate the object at
@@ -144,9 +146,11 @@ public class DynamicRuntime {
 		int newObjLen = ((scS+3)&~3) + 4*rlE+16;
 		while(true) {
 			//save 8 bytes of the scalar for the objects own scalars
+			//TODO: use MAGIC.getInstScalarSize (or whatever it might be called)
 			if ((eObj._r_scalarSize-8)>= newObjLen){
 				break;
 			}
+			//TODO: implement eObj is kil for when we can remove the eObj to fit (20 bytes per eObj!)
 			if(eObj.nextEmptyObject == null) {
 				MAGIC.inline(0xCC); //out of memory
 			}

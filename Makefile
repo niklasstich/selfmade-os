@@ -14,7 +14,7 @@ run: compile
 	$(qemu_executable) -m 32 -boot a -fda out/BOOT_FLP.IMG
 
 install-compiler:
-	curl https://www.fam-frenz.de/stefan/exec$(toolchain_version).zip -o tools.zip
+	curl https://www.fam-frenz.de/stefan/compsnpe.zip -o tools.zip
 	mkdir -p $(compilerdir)
 	unzip -d $(compilerdir) -j tools.zip  
 	rm tools.zip
