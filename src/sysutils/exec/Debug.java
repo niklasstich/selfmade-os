@@ -2,7 +2,17 @@ package sysutils.exec;
 
 class Debug extends Executable {
 	static {
-		ExecutableStore.addExecutable(new Debug());
+		ExecutableStore.addExecutableFactory(new ExecutableFactory() {
+			@Override
+			Executable createExecutable() {
+				return new Debug();
+			}
+			
+			@Override
+			String getName() {
+				return "debughalt";
+			}
+		});
 	}
 	@Override
 	public int execute(String[] args) {
@@ -10,8 +20,4 @@ class Debug extends Executable {
 		return -1;
 	}
 	
-	@Override
-	String getName() {
-		return "debughalt";
-	}
 }

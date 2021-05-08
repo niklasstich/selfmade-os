@@ -5,7 +5,17 @@ import kernel.BIOS;
 
 class GetMemMap extends Executable{
 	static {
-		ExecutableStore.addExecutable(new GetMemMap());
+		ExecutableStore.addExecutableFactory(new ExecutableFactory() {
+			@Override
+			Executable createExecutable() {
+				return new GetMemMap();
+			}
+			
+			@Override
+			String getName() {
+				return "memmap";
+			}
+		});
 	}
 	@Override
 	public int execute(String[] args) {
@@ -30,8 +40,4 @@ class GetMemMap extends Executable{
 		Console.print('\n');
 	}
 	
-	@Override
-	String getName() {
-		return "memmap";
-	}
 }

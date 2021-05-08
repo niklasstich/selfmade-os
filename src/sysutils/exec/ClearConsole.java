@@ -4,7 +4,17 @@ import graphics.Console;
 
 public class ClearConsole extends Executable{
 	static {
-		ExecutableStore.addExecutable(new ClearConsole());
+		ExecutableStore.addExecutableFactory(new ExecutableFactory() {
+			@Override
+			Executable createExecutable() {
+				return new ClearConsole();
+			}
+			
+			@Override
+			String getName() {
+				return "clear";
+			}
+		});
 	}
 	@Override
 	public int execute(String[] args) {
@@ -12,8 +22,4 @@ public class ClearConsole extends Executable{
 		return 0;
 	}
 	
-	@Override
-	String getName() {
-		return "clear";
-	}
 }

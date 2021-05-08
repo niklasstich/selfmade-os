@@ -3,7 +3,6 @@ package sysutils.exec;
 import graphics.Console;
 import hardware.pci.PCIController;
 import hardware.pci.PCIDevice;
-import utils.TypeConv;
 
 class GetPCIDevices extends Executable {
 	private static final String[] baseClassCodes = {"old device", "mass storage", "network controller",
@@ -11,7 +10,17 @@ class GetPCIDevices extends Executable {
 	"system peripheral", "input device", "docking station", "processor", "serial bus", "wireless coms device",
 	"intelligent controller", "satellite communication"};
 	static {
-		ExecutableStore.addExecutable(new GetPCIDevices());
+		ExecutableStore.addExecutableFactory(new ExecutableFactory() {
+			@Override
+			Executable createExecutable() {
+				return new GetPCIDevices();
+			}
+			
+			@Override
+			String getName() {
+				return "lspci";
+			}
+		});
 	}
 	@Override
 	public int execute(String[] args) {
@@ -33,8 +42,4 @@ class GetPCIDevices extends Executable {
 		return 0;
 	}
 	
-	@Override
-	String getName() {
-		return "lspci";
-	}
 }

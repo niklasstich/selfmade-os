@@ -4,7 +4,17 @@ import graphics.Console;
 
 class Echo extends Executable{
 	static {
-		ExecutableStore.addExecutable(new Echo());
+		ExecutableStore.addExecutableFactory(new ExecutableFactory() {
+			@Override
+			Executable createExecutable() {
+				return new Echo();
+			}
+			
+			@Override
+			String getName() {
+				return "echo";
+			}
+		});
 	}
 	@Override
 	public int execute(String[] args) {
@@ -16,8 +26,4 @@ class Echo extends Executable{
 		return 0;
 	}
 	
-	@Override
-	String getName() {
-		return "echo";
-	}
 }
