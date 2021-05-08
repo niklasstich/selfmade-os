@@ -2,6 +2,7 @@ package kernel;
 
 import graphics.Console;
 import graphics.ConsoleColors;
+import hardware.Serial;
 import hardware.Time;
 import rte.DynamicRuntime;
 import sysutils.SystemTerminal;
@@ -9,10 +10,14 @@ import sysutils.SystemTerminal;
 public class Kernel {
 	private static final int GDTBASE = 0x10000;
 	public static void main() {
+		Serial.print("starting up... ");
 		DynamicRuntime.initializeEmptyObjects();
+		Serial.print("initialized empty objects ");
 		Interrupts.prepareInterrupts();
+		Serial.print("initialized interrupts ");
 		MAGIC.doStaticInit();
 		//testConsole();
+		Serial.print("initialized static variables\n");
 		SystemTerminal systerm = new SystemTerminal();
 		systerm.init();
 		//set interrupt flag ERST WENN PICs
