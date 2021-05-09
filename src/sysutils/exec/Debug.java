@@ -1,5 +1,7 @@
 package sysutils.exec;
 
+import sysutils.Scheduler;
+
 class Debug extends Executable {
 	static {
 		ExecutableStore.addExecutableFactory(new ExecutableFactory() {
@@ -15,8 +17,9 @@ class Debug extends Executable {
 		});
 	}
 	@Override
-	public int execute(String[] args) {
+	public int execute() {
 		MAGIC.inline(0xCC);
+		Scheduler.markTaskAsFinished(this);
 		return -1;
 	}
 	

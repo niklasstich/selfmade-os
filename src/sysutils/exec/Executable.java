@@ -1,5 +1,17 @@
 package sysutils.exec;
 
+import hardware.keyboard.KeyboardEventRingBuffer;
+
 public abstract class Executable {
-	public abstract int execute(String[] args);
+	protected String[] args;
+	public KeyboardEventRingBuffer buffer = new KeyboardEventRingBuffer();
+	public void setArgs(String[] args) {
+		if(this.args==null)
+			this.args = args;
+		else {
+			//tried to add args even tho they are already initialized
+			MAGIC.inline(0xCC);
+		}
+	}
+	public abstract int execute();
 }

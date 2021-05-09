@@ -3,6 +3,7 @@ package sysutils.exec;
 import graphics.Console;
 import hardware.pci.PCIController;
 import hardware.pci.PCIDevice;
+import sysutils.Scheduler;
 
 class GetPCIDevices extends Executable {
 	private static final String[] baseClassCodes = {"old device", "mass storage", "network controller",
@@ -23,7 +24,7 @@ class GetPCIDevices extends Executable {
 		});
 	}
 	@Override
-	public int execute(String[] args) {
+	public int execute() {
 		PCIDevice[] devs = PCIController.getRecognizedDevices();
 		Console.print("Found "); Console.print(devs.length); Console.print(" devices:"); Console.print('\n');
 		Console.print("Device: Bus, Dev, Func, Class, Subclass, Vendor, device ");
@@ -39,6 +40,7 @@ class GetPCIDevices extends Executable {
 			Console.print(dev.vendorID); Console.print(",");
 			Console.print(dev.devID); Console.print('\n');
 		}
+		Scheduler.markTaskAsFinished(this);
 		return 0;
 	}
 	

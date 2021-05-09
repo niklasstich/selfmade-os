@@ -2,6 +2,7 @@ package sysutils.exec;
 
 import graphics.Console;
 import graphics.ConsoleColors;
+import sysutils.Scheduler;
 
 //executablestore is itself an executable, because it can list all executables to the console
 public class ExecutableStore extends Executable {
@@ -39,13 +40,14 @@ public class ExecutableStore extends Executable {
 	}
 	
 	@Override
-	public int execute(String[] args) {
+	public int execute() {
 		Console.setColor(ConsoleColors.FG_GREEN, ConsoleColors.BG_BLACK, false);
 		for (int i = 0; i < insertionIndex; i++) {
 			Console.print(execFactories[i].getName().concat(" "));
 		}
 		Console.print('\n');
 		Console.setDefaultColor();
+		Scheduler.markTaskAsFinished(this);
 		return 0;
 	}
 	

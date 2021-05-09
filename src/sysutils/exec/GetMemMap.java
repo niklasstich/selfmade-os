@@ -2,6 +2,7 @@ package sysutils.exec;
 
 import graphics.Console;
 import kernel.BIOS;
+import sysutils.Scheduler;
 
 class GetMemMap extends Executable{
 	static {
@@ -18,7 +19,7 @@ class GetMemMap extends Executable{
 		});
 	}
 	@Override
-	public int execute(String[] args) {
+	public int execute() {
 		Console.print("Memory segments according to BIOS:\n");
 		int conIndex = 0;
 		do {
@@ -26,6 +27,7 @@ class GetMemMap extends Executable{
 			conIndex = BIOS.regs.EBX;
 			print(seg);
 		} while (conIndex!=0);
+		Scheduler.markTaskAsFinished(this);
 		return 0;
 	}
 	

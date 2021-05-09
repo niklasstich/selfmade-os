@@ -1,6 +1,7 @@
 package sysutils.exec;
 
 import graphics.Console;
+import sysutils.Scheduler;
 
 public class ClearConsole extends Executable{
 	static {
@@ -17,8 +18,9 @@ public class ClearConsole extends Executable{
 		});
 	}
 	@Override
-	public int execute(String[] args) {
+	public int execute() {
 		Console.clearConsole();
+		Scheduler.markTaskAsFinished(this);
 		return 0;
 	}
 	

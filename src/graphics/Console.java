@@ -46,6 +46,10 @@ public abstract class Console {
 		if (cursor) VideoController.updateCursor();
 	}
 	
+	public static VideoCharCopy[] getCurrentVideoMemory() {
+		return VideoController.getCurrentVideoMem();
+	}
+	
 	public static void print(char c) {
 		VideoController.handleChar(c, color);
 		if (cursor) VideoController.updateCursor();
@@ -183,4 +187,24 @@ public abstract class Console {
             printRecursiveInt(value);
         print(currChar);
     }
+	
+	public static void writeVideoMemory(VideoCharCopy[] myVidMem) {
+		//save pos, then restore it
+		VideoController.setPos(0,0);
+		for (int i = 0; i < VideoMemory.VIDEO_MEMORY_LENGTH; i++) {
+			VideoController.handleChar(myVidMem[i].ascii, myVidMem[i].color);
+		}
+	}
+	
+	public static int getXPos() {
+		return VideoController.getXPos();
+	}
+	
+	public static int getYPos() {
+		return VideoController.getYPos();
+	}
+	
+	public static void setPos(int X, int Y) {
+		VideoController.setPos(X,Y);
+	}
 }

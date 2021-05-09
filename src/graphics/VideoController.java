@@ -76,6 +76,14 @@ public class VideoController {
 		videoMemoryPosition = 0;
 	}
 	
+	static VideoCharCopy[] getCurrentVideoMem() {
+		VideoCharCopy[] temp = new VideoCharCopy[VideoMemory.VIDEO_MEMORY_LENGTH];
+		for (int i = 0; i < VideoMemory.VIDEO_MEMORY_LENGTH; i++) {
+			temp[i] = new VideoCharCopy(vidMem.pos[i].ascii, vidMem.pos[i].color);
+		}
+		return temp;
+	}
+	
 	private static void carriageReturn() {
 		videoMemoryPosition -= videoMemoryPosition % VideoMemory.VIDEO_MEMORY_COLUMNS;
 	}
@@ -109,4 +117,11 @@ public class VideoController {
 	}
 	
 	
+	public static int getXPos() {
+		return videoMemoryPosition%VideoMemory.VIDEO_MEMORY_COLUMNS;
+	}
+	
+	public static int getYPos() {
+		return videoMemoryPosition/VideoMemory.VIDEO_MEMORY_COLUMNS;
+	}
 }

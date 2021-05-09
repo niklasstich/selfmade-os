@@ -5,6 +5,7 @@ import graphics.ConsoleColors;
 import hardware.Serial;
 import hardware.Time;
 import rte.DynamicRuntime;
+import sysutils.Scheduler;
 import sysutils.SystemTerminal;
 
 public class Kernel {
@@ -12,19 +13,19 @@ public class Kernel {
 	public static void main() {
 		Serial.print("starting up... ");
 		DynamicRuntime.initializeEmptyObjects();
-		Serial.print("initialized empty objects ");
+		Serial.print("initialized empty objects... ");
 		Interrupts.prepareInterrupts();
-		Serial.print("initialized interrupts ");
+		Serial.print("initialized interrupts... ");
 		MAGIC.doStaticInit();
 		//testConsole();
 		Serial.print("initialized static variables\n");
-		SystemTerminal systerm = new SystemTerminal();
-		systerm.init();
 		//set interrupt flag ERST WENN PICs
 		MAGIC.inline(0xFB);
 		
+		Scheduler.init();
+		Serial.print("initialized scheduler... starting scheduling.\n");
 		//SETUP COMPLETE
-		systerm.focus();
+		Scheduler.startScheduling();
 	}
 	
 	public static void testConsole() {
