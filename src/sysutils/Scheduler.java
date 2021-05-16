@@ -4,6 +4,7 @@ import graphics.Console;
 import hardware.keyboard.Keyboard;
 import hardware.keyboard.KeyboardEvent;
 import hardware.keyboard.KeyboardEventRingBuffer;
+import rte.DynamicRuntime;
 import sysutils.exec.Executable;
 
 public class Scheduler {
@@ -12,7 +13,6 @@ public class Scheduler {
 	private static SchedulerTask[] runningTasks;
 	private static SystemTerminal currentTerminal;
 	private static SystemTerminal[] terminalList;
-	private static int focusTask;
 	
 	public static void init() {
 		runningTasks = new SchedulerTask[MAX_TASKS];
@@ -34,6 +34,9 @@ public class Scheduler {
 			currentTerminal.focus();
 			//execute any tasks that are not marked as finished
 			executeActiveTasks();
+			
+			//run garbage collection
+			DynamicRuntime.collectGarbage();
 		}
 	}
 	
