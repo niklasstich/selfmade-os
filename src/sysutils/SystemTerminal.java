@@ -1,8 +1,8 @@
 package sysutils;
 
 import graphics.*;
+import hardware.Serial;
 import hardware.keyboard.Key;
-import hardware.keyboard.Keyboard;
 import hardware.keyboard.KeyboardEvent;
 import hardware.keyboard.KeyboardEventRingBuffer;
 import sysutils.exec.Executable;
@@ -12,9 +12,16 @@ import utils.ArrayUtils;
 
 public class SystemTerminal {
 	private static final int INPUT_BUFFER_SIZE = 320;
+	private static final int COMMAND_HISTORY_SIZE = 20;
 	KeyboardEventRingBuffer buffer = new KeyboardEventRingBuffer();
 	private char[] inputBuffer = new char[INPUT_BUFFER_SIZE];
+	private char[][] commandHistory = new char[COMMAND_HISTORY_SIZE][INPUT_BUFFER_SIZE];
 	private int inputBufferPointer = 0;
+	private int commandHistoryWritePointer = 0;
+	//always points to the command history entry that should be read next, or -1 if the history is still empty
+	private int commandHistoryReadPointer = -1;
+	//whether or not the current command is loaded history
+	private boolean lastCommand = false;
 	private SchedulerTask activeTask;
 	private boolean firstCall = true;
 	VideoCharCopy[] myVidMem;
@@ -77,7 +84,7 @@ public class SystemTerminal {
 				printPrompt();
 			} else {
 				//we have to wait for the task to finished, pass on inputs if necessary
-				while (buffer.canRead()) {
+				while (buffer.canRead()&&activeTask.exec.acceptsKeyboardInputs) {
 					activeTask.exec.buffer.writeEvent(buffer.readEvent());
 				}
 			}
@@ -90,6 +97,7 @@ public class SystemTerminal {
 					if(inputBufferPointer>0) {
 						inputBuffer[--inputBufferPointer] = '\u0000'; //reset to zerovalue
 						Console.print((char) ASCIIControlSequences.BACKSPACE);
+						lastCommand =false;
 					}
 					continue;
 				}
@@ -102,6 +110,7 @@ public class SystemTerminal {
 						if (split.length > 0) {
 							Executable ex = ExecutableStore.fetchExecutable(split[0]);
 							if (ex!=null) {
+								addCommandToHistory();
 								String[] args = ArrayUtils.subArray(split, 1, split.length);
 								//TODO: add event to the scheduler and pass arguments
 								ex.setArgs(args);
@@ -110,9 +119,19 @@ public class SystemTerminal {
 								printExNotFound(split[0]);
 							}
 						}
-						
 					}
+					updateHistoryPointer();
 					clearInputBuffer();
+					continue;
+				}
+				case Key.UP_ARROW: {
+					char[] temp = getNextCommandHistoryEntry();
+					showCommandHistoryEntry(temp);
+					continue;
+				}
+				case Key.DOWN_ARROW: {
+					char[] temp = getPreviousCommandHistoryEntry();
+					showCommandHistoryEntry(temp);
 					continue;
 				}
 			}
@@ -135,10 +154,87 @@ public class SystemTerminal {
 			if (kev.KEYCODE >= Key.SPACE && kev.KEYCODE <= Key.TILDE) { //printable ascii, straight up cast and push
 				inputBuffer[inputBufferPointer] = (char) (kev.KEYCODE&0xFF);
 				inputBufferPointer++;
+				lastCommand =false;
 				Console.print((char)(kev.KEYCODE&0xFF));
 				continue;
 			}
 			
+		}
+	}
+	
+	private void updateHistoryPointer() {
+		commandHistoryReadPointer=commandHistoryWritePointer-1;
+	}
+	
+	private void addCommandToHistory() {
+		if (!lastCommand) {
+			if (commandHistoryWritePointer == COMMAND_HISTORY_SIZE) {
+				//history is full, move everything one over
+				for (int i = 0; i < COMMAND_HISTORY_SIZE - 1; i++) {
+					commandHistory[i] = commandHistory[i + 1];
+				}
+				for (int i = 0; i < inputBufferPointer; i++) {
+					commandHistory[COMMAND_HISTORY_SIZE - 1][i] = inputBuffer[i];
+				}
+				//
+				commandHistoryReadPointer = COMMAND_HISTORY_SIZE - 1;
+				return;
+			}
+			//there is space in the history
+			for (int i = 0; i < inputBufferPointer; i++) {
+				commandHistory[commandHistoryWritePointer][i] = inputBuffer[i];
+			}
+			commandHistoryReadPointer = commandHistoryWritePointer;
+			commandHistoryWritePointer++;
+		}
+		
+	}
+	
+	private char[] getNextCommandHistoryEntry() {
+		if(commandHistoryReadPointer == -1)
+			return null;
+		char[] temp = copyCommandHistory(commandHistoryReadPointer);
+		lastCommand = (commandHistoryReadPointer == commandHistoryWritePointer-1);
+		commandHistoryReadPointer--;
+		return temp;
+	}
+	
+	private char[] getPreviousCommandHistoryEntry() {
+		if(commandHistoryReadPointer+2 > commandHistoryWritePointer) {
+			//out of bounds
+			return null;
+		} else if (commandHistoryReadPointer+2 == commandHistoryWritePointer){
+			//go back to empty command line
+			commandHistoryReadPointer++;
+			return new char[INPUT_BUFFER_SIZE];
+		}
+		char[] temp = copyCommandHistory(commandHistoryReadPointer+2);
+		lastCommand = (commandHistoryReadPointer+2 == commandHistoryWritePointer-1);
+		commandHistoryReadPointer++;
+		return temp;
+	}
+	
+	private char[] copyCommandHistory(int index) {
+		char[] temp = new char[INPUT_BUFFER_SIZE];
+		for (int i = 0; i < INPUT_BUFFER_SIZE; i++) {
+			temp[i] = commandHistory[index][i];
+		}
+		return temp;
+	}
+	
+	private void showCommandHistoryEntry(char[] temp) {
+		if (temp != null) {
+			inputBuffer = temp;
+			clearLine();
+			printPrompt();
+			//restore inputBufferPointer
+			for (inputBufferPointer = 0; inputBufferPointer < INPUT_BUFFER_SIZE; inputBufferPointer++) {
+				if(inputBuffer[inputBufferPointer]==0) break;
+			}
+			//print inputBufferPointer
+			for (int i = 0; i < inputBufferPointer; i++) {
+				Console.print(inputBuffer[i]);
+			}
 		}
 	}
 	
@@ -165,6 +261,14 @@ public class SystemTerminal {
 			inputBuffer[i] = 0;
 		}
 		inputBufferPointer = 0;
+	}
+	
+	private void clearLine() {
+		Console.print(ASCIIControlSequences.CARRIAGE_RETURN);
+		for (int i = 0; i < VideoMemory.VIDEO_MEMORY_COLUMNS; i++) {
+			Console.print(ASCIIControlSequences.SPACE);
+		}
+		Console.setCursor(Console.getXPos(), Console.getYPos()-1);
 	}
 	
 	void storeMyMem() {
