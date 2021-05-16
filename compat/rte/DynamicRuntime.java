@@ -5,6 +5,10 @@ import kernel.BIOS;
 
 public class DynamicRuntime {
 	private static SEmptyObject firstEObj = null;
+	private static SEmptyObject lastEObj = null;
+	private static final int FIRST_OBJECT_IMG_BASE_OFFSET = 16;
+	private static final int BIOS_MEMSEG_LEN_OFFSET = 8;
+	private static final int BIOS_MEMSEG_TYPE_OFFSET = 16;
 	
 	public static void initializeEmptyObjects() {
 		//get memsegs from bios and evaluate if it is free
@@ -14,13 +18,13 @@ public class DynamicRuntime {
 			conIndex = BIOS.regs.EBX;
 			
 			//if segment is free, allocate empty object
-			int memSegType = MAGIC.rMem32(BIOS.MEM_READ_BUF+16);
+			int memSegType = MAGIC.rMem32(BIOS.MEM_READ_BUF+BIOS_MEMSEG_TYPE_OFFSET);
 			if(memSegType==1) {
 				int baseAdd = (int) MAGIC.rMem64(BIOS.MEM_READ_BUF);
 				//dont touch any addresses in bios addr room, we don't know what exactly lies there
 				if (baseAdd>BIOS.BIOS_ADDR_MAX) {
 					//TODO: check if we even have enough space for the emptyObj + another basic object
-					int len = (int) MAGIC.rMem64(BIOS.MEM_READ_BUF+8);
+					int len = (int) MAGIC.rMem64(BIOS.MEM_READ_BUF+BIOS_MEMSEG_LEN_OFFSET);
 					//if len is less or exactly the size of an empty object, don't even bother creating an object
 					if (len<=MAGIC.getInstScalarSize("SEmptyObject")+MAGIC.getInstRelocEntries("SEmptyObject")*4) {
 						continue;
@@ -30,7 +34,7 @@ public class DynamicRuntime {
 					//take the object and chase the r_next chain until we get to the end of it
 					//or we get a memory segment which doesn't contain it, and then we have to be careful to not f up
 					//the r_next chain that must point to the new eObj
-					int SJCObjAddr = MAGIC.imageBase+16;
+					int SJCObjAddr = MAGIC.imageBase+FIRST_OBJECT_IMG_BASE_OFFSET;
 					if (SJCObjAddr >= baseAdd && SJCObjAddr <= maxAddress) { //sjc obj in segment
 						//get imageBase first object and go through the next pointer until we find no more objects
 						Object obj = MAGIC.cast2Obj(SJCObjAddr);
@@ -39,17 +43,16 @@ public class DynamicRuntime {
 						}
 						
 						int nextFreeAddress = MAGIC.cast2Ref(obj)+obj._r_scalarSize;
-						for (int i = nextFreeAddress; i < nextFreeAddress+20; i++) {
+						for (int i = nextFreeAddress; i < nextFreeAddress+MAGIC.getInstScalarSize("SEmptyObject"); i++) {
 							MAGIC.wMem8(i, (byte) 0);
 						}
-						//we add 12 bytes to make space for the 3 relocs it contains
-						//TODO: change to MAGIC.getInstRelocEntries
-						nextFreeAddress+=12;
+						//we add ?? bytes to make space for the ? relocs it contains
+						nextFreeAddress+=MAGIC.getInstRelocEntries("SEmptyObject")*MAGIC.ptrSize;
 						
 						//nextFreeAddress is now the correct address to allocate the object at
 						Object eObj = MAGIC.cast2Obj(nextFreeAddress);
 						//we set relocsEntries, type and scalarsize
-						MAGIC.assign(eObj._r_relocEntries, 3);
+						MAGIC.assign(eObj._r_relocEntries, MAGIC.getInstRelocEntries("SEmptyObject"));
 						MAGIC.assign(eObj._r_type, MAGIC.clssDesc("SEmptyObject"));
 						//scalarSize is the maximum address minus the current address plus 1
 						MAGIC.assign(eObj._r_scalarSize, maxAddress-nextFreeAddress+1);
@@ -67,12 +70,14 @@ public class DynamicRuntime {
 							}
 							MAGIC.assign(temp.nextEmptyObject, (SEmptyObject)eObj);
 							MAGIC.assign(temp._r_next, MAGIC.cast2Obj(SJCObjAddr));
+							MAGIC.assign(((SEmptyObject) eObj).prevEmptyObject, temp);
 						}
+						lastEObj = (SEmptyObject) eObj;
 					} else { //no sjc objs in segment
 						//because there shouldn't be an preexisting objects in this segment, we can just use the baseAddress
 						//of the segment as the baseAddress of our eObj
 						int nextFreeAddress = baseAdd;
-						for (int i = nextFreeAddress; i < nextFreeAddress+20; i++) {
+						for (int i = nextFreeAddress; i < nextFreeAddress+MAGIC.getInstScalarSize("SEmptyObject"); i++) {
 							MAGIC.wMem8(i, (byte) 0);
 						}
 						//we add 12 bytes to make space for the 3 relocs it contains
@@ -105,7 +110,9 @@ public class DynamicRuntime {
 							}
 							MAGIC.assign(temp.nextEmptyObject, (SEmptyObject)eObj);
 							MAGIC.assign(temp._r_next, eObj);
+							MAGIC.assign(((SEmptyObject) eObj).prevEmptyObject, temp);
 						}
+						lastEObj = (SEmptyObject) eObj;
 					}
 					
 				}
@@ -147,24 +154,44 @@ public class DynamicRuntime {
 		
 		//find emptyobject that can fit new instance
 		SEmptyObject eObj = firstEObj;
-		int newObjLen = ((scS+3)&~3) + 4*rlE+16;
+		boolean perfectFit = false;
+		scS = (scS+3)&~3;
+		//TODO: hier stand +16, YTF?!?
+		int newObjLen = scS + 4*rlE;
 		while(true) {
-			//save 8 bytes of the scalar for the objects own scalars
+			//object fits in free memory in EmptyObject
 			if ((eObj._r_scalarSize-MAGIC.getInstScalarSize("SEmptyObject"))>= newObjLen){
 				break;
+			} else if ((eObj._r_scalarSize+eObj._r_relocEntries*MAGIC.ptrSize) == newObjLen) {//object fits EXACTLY into the eObj
+				perfectFit = true;
+				break;
 			}
-			//TODO: implement eObj is kil for when we can remove the eObj to fit (20 bytes per eObj!)
 			if(eObj.nextEmptyObject == null) {
 				MAGIC.inline(0xCC); //out of memory
 			}
 			eObj = eObj.nextEmptyObject; //traverse
 		}
 		
+		//TODO: implement eObj is kil for when we can remove the eObj to fit (?? bytes per eObj!)
 		//calculate new address and subtract object size from eObj scalarsize
-		int newObjAddr = MAGIC.cast2Ref(eObj)+eObj._r_scalarSize-((scS+3)&~3);
-		MAGIC.assign(eObj._r_scalarSize, eObj._r_scalarSize-newObjLen);
+		int newObjAddr = MAGIC.cast2Ref(eObj)+eObj._r_scalarSize-scS;
+		Object newObjNext = eObj._r_next;
+		Object eObjPointee = null;
+		if(!perfectFit) {
+			MAGIC.assign(eObj._r_scalarSize, eObj._r_scalarSize - newObjLen);
+		} else {
+			//we have to correct the eObj pointer list, because after nulling the memory all our relocs are gone
+			if(eObj.prevEmptyObject != null)
+				MAGIC.assign(eObj.prevEmptyObject.nextEmptyObject, eObj.nextEmptyObject);
+			if(eObj.nextEmptyObject != null)
+				MAGIC.assign(eObj.nextEmptyObject.prevEmptyObject, eObj.prevEmptyObject);
+			eObjPointee = MAGIC.cast2Obj(MAGIC.imageBase+FIRST_OBJECT_IMG_BASE_OFFSET);
+			while (eObjPointee._r_next!=(Object) eObj){
+				eObjPointee=eObjPointee._r_next;
+			}
+		}
 		//the address from which we have to start nulling memory
-		for (int i = newObjAddr-(rlE*4); i < newObjAddr+scS; i++) {
+		for (int i = newObjAddr-(rlE*MAGIC.ptrSize); i < newObjAddr+scS; i++) {
 			MAGIC.wMem8(i, (byte)0);
 		}
 		
@@ -175,8 +202,11 @@ public class DynamicRuntime {
 		MAGIC.assign(newOb._r_type, type);
 		
 		//correct next pointers
-		MAGIC.assign(newOb._r_next, eObj._r_next);
-		MAGIC.assign(eObj._r_next, newOb);
+		MAGIC.assign(newOb._r_next, newObjNext);
+		if (!perfectFit)
+			MAGIC.assign(eObj._r_next, newOb);
+		else
+			MAGIC.assign(eObjPointee._r_next, newOb);
 		return newOb;
 	}
 	//creates a new array object
@@ -289,4 +319,6 @@ public class DynamicRuntime {
 		else if (dest._r_unitType==null) MAGIC.inline(0xCC);
 		else isInstance(newEntry, (SClassDesc) dest._r_unitType, true);
 	}
+	
+	
 }
