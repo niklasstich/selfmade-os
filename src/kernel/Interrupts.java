@@ -1,6 +1,7 @@
 package kernel;
 
 import graphics.Console;
+import hardware.Serial;
 import hardware.Time;
 import hardware.keyboard.Keyboard;
 
@@ -120,13 +121,21 @@ public class Interrupts {
 	//hex 05 index out of range
 	@SJC.Interrupt
 	private static void indexOutOfRangeHandler() {
-		Console.debug("i out of range");
+		int ebp = 0;
+		MAGIC.inline(0x89,0x6D);
+		MAGIC.inlineOffset(1,ebp);
+		ErrorScreen.showErrorScreen(ebp, "i out of range");
+		Serial.print("i out of range");
 		while (true);
 	}
 	//hex 06 invalid opcode
 	@SJC.Interrupt
 	private static void invalidOpcodeHandler() {
-		Console.debug("invalid opcode");
+		int ebp = 0;
+		MAGIC.inline(0x89,0x6D);
+		MAGIC.inlineOffset(1,ebp);
+		ErrorScreen.showErrorScreen(ebp, "invalid opcode");
+		Serial.print("invalid opcode");
 		while (true);
 	}
 	//hex 07 reserved

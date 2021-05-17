@@ -2,6 +2,7 @@ package rte;
 
 import hardware.Serial;
 import kernel.BIOS;
+import sysutils.Scheduler;
 
 public class DynamicRuntime {
 	private static SEmptyObject firstEObj = null;
@@ -13,7 +14,7 @@ public class DynamicRuntime {
 	private static final int SJC_OBJECT_ADDR = MAGIC.imageBase+FIRST_OBJECT_IMG_BASE_OFFSET;
 	
 	private static void saveLastRootsetObject() {
-		Object obj = MAGIC.cast2Obj(SJC_OBJECT_ADDR);
+		Object obj = MAGIC.cast2Obj(MAGIC.rMem32(SJC_OBJECT_ADDR));
 		while (obj._r_next!=null) {
 			obj = obj._r_next;
 		}
@@ -46,9 +47,9 @@ public class DynamicRuntime {
 					//take the object and chase the r_next chain until we get to the end of it
 					//or we get a memory segment which doesn't contain it, and then we have to be careful to not f up
 					//the r_next chain that must point to the new eObj
-					if (SJC_OBJECT_ADDR >= baseAdd && SJC_OBJECT_ADDR <= maxAddress) { //sjc obj in segment
+					if (MAGIC.rMem32(SJC_OBJECT_ADDR) >= baseAdd && MAGIC.rMem32(SJC_OBJECT_ADDR) <= maxAddress) { //sjc obj in segment
 						//get imageBase first object and go through the next pointer until we find no more objects
-						Object obj = MAGIC.cast2Obj(SJC_OBJECT_ADDR);
+						Object obj = MAGIC.cast2Obj(MAGIC.rMem32(SJC_OBJECT_ADDR));
 						while (obj._r_next!=null) {
 							obj = obj._r_next;
 						}
@@ -108,7 +109,7 @@ public class DynamicRuntime {
 						if (firstEObj == null) {
 							firstEObj = (SEmptyObject) eObj;
 							//get base image object
-							Object obj = MAGIC.cast2Obj(SJC_OBJECT_ADDR);
+							Object obj = MAGIC.cast2Obj(MAGIC.rMem32(SJC_OBJECT_ADDR));
 							while (obj._r_next!=null) {
 								obj = obj._r_next;
 							}
@@ -197,11 +198,21 @@ public class DynamicRuntime {
 				MAGIC.assign(eObj.prevEmptyObject.nextEmptyObject, eObj.nextEmptyObject);
 			if(eObj.nextEmptyObject != null)
 				MAGIC.assign(eObj.nextEmptyObject.prevEmptyObject, eObj.prevEmptyObject);
-			eObjPointee = MAGIC.cast2Obj(SJC_OBJECT_ADDR);
+			eObjPointee = MAGIC.cast2Obj(MAGIC.rMem32(SJC_OBJECT_ADDR));
 			while (eObjPointee._r_next!=(Object) eObj){
 				eObjPointee=eObjPointee._r_next;
 			}
 		}
+		/*
+		Serial.print('+');
+		Serial.print(eObj._r_scalarSize);
+		Serial.print(',');
+		Serial.print(newObjLen);
+		Serial.print(';');
+		Serial.print(scS);
+		Serial.print(',');
+		Serial.print(rlE);
+		Serial.print('\n');*/
 		//the address from which we have to start nulling memory
 		for (int i = newObjAddr-(rlE*MAGIC.ptrSize); i < newObjAddr+scS; i++) {
 			MAGIC.wMem8(i, (byte)0);
@@ -333,29 +344,43 @@ public class DynamicRuntime {
 	}
 	
 	public static void collectGarbage() {
-		Object rootObj = MAGIC.cast2Obj(SJC_OBJECT_ADDR);
+		Object rootObj = MAGIC.cast2Obj(MAGIC.rMem32(SJC_OBJECT_ADDR));
+		if(!isInstance(rootObj, (SClassDesc) MAGIC.clssDesc("Object"), false))
+			MAGIC.inline(0xCC);
 		markGarbage(rootObj);
 		sweepGarbage(rootObj);
 	}
 	
 	private static void markGarbage(Object rootObj) {
-		markRelocs(rootObj);
+		markRelocs(rootObj,1);
 		do {
 			//mark shit
 			//mark all relocs it has
 			rootObj = rootObj._r_next;
-			markRelocs(rootObj);
+			markRelocs(rootObj,1);
 			//mark the object itself
 			//advance to next rootset obj
 		} while(rootObj != lastRootsetObject);
 	}
 	
-	private static void markRelocs(Object obj) {
+	private static void markRelocs(Object obj, int d) {
+		if(obj==null)return;
+		if(obj._r_used==1)return;
 		MAGIC.assign(obj._r_used, 1);
 		int baseAddr = MAGIC.cast2Ref(obj);
+		baseAddr-=MAGIC.ptrSize;
 		for (int i = 0; i < obj._r_relocEntries; i++) {
-			Object o = MAGIC.cast2Obj(baseAddr-i*MAGIC.ptrSize);
-			MAGIC.assign(obj._r_used, 1);
+			int addr = MAGIC.rMem32(baseAddr-i*MAGIC.ptrSize);
+			if(addr == 0) {
+				continue;
+			}
+			Object o = MAGIC.cast2Obj(addr);
+			if(o==obj._r_next||o==obj._r_type) {
+				continue;
+			}
+			if(!isInstance(o, (SClassDesc) MAGIC.clssDesc("Object"), false))
+				MAGIC.inline(0xCC);
+			markRelocs(o,d+1);
 		}
 	}
 	
@@ -364,46 +389,56 @@ public class DynamicRuntime {
 		Object prevObject = null;
 		Object nextObject = obj._r_next;
 		while(obj!=null){
-			if(obj._r_used==0) {
-				if(isInstance(obj, (SClassDesc) MAGIC.clssDesc("SEmptyObject"),false)) {
-					lastSeenEmptyObject = (SEmptyObject) obj;
-				} else {
-					//deletion because unused
-					//check if emptyObject even fits
-					if (obj._r_scalarSize + obj._r_relocEntries * MAGIC.ptrSize >=
-							MAGIC.getInstScalarSize("SEmptyObject")
-							+ MAGIC.getInstRelocEntries("SEmptyObject") * MAGIC.ptrSize) {
-						//TODO: check if prev object is eObj and make bigger or check if we can combine with following object
-					} else {//eObj fits in hole
-						int objBaseAddr = MAGIC.cast2Ref(obj);
-						objBaseAddr -= obj._r_relocEntries*MAGIC.ptrSize;
-						int eObjAddr = objBaseAddr+MAGIC.getInstRelocEntries("SEmptyObject")*MAGIC.ptrSize;
-						int freeMem = obj._r_relocEntries*MAGIC.ptrSize+obj._r_scalarSize;
-						//null memory
-						for (int i = objBaseAddr; i < eObjAddr+MAGIC.getInstScalarSize("SEmptyObject"); i++) {
-							MAGIC.wMem8(i, (byte)0);
-						}
-						Object eObj = MAGIC.cast2Obj(eObjAddr);
-						MAGIC.assign(eObj._r_type, MAGIC.clssDesc("SEmptyObject"));
-						MAGIC.assign(eObj._r_relocEntries, MAGIC.getInstRelocEntries("SEmptyObject"));
-						MAGIC.assign(eObj._r_scalarSize, freeMem-MAGIC.getInstRelocEntries("SEmptyObject")*MAGIC.ptrSize);
-						//normal pointers
-						if(prevObject!=null)
-							MAGIC.assign(prevObject._r_next, eObj);
-						MAGIC.assign(eObj._r_next, nextObject);
-						//eObj pointers
-						MAGIC.assign(((SEmptyObject)eObj).prevEmptyObject, lastSeenEmptyObject);
-						if(lastSeenEmptyObject!=null) {
-							MAGIC.assign(((SEmptyObject) eObj).nextEmptyObject, lastSeenEmptyObject.nextEmptyObject);
-							MAGIC.assign(lastSeenEmptyObject.nextEmptyObject, (SEmptyObject)eObj);
-							MAGIC.assign(((SEmptyObject) eObj).nextEmptyObject.prevEmptyObject, (SEmptyObject)eObj);
-						} else {
-							MAGIC.assign(((SEmptyObject) eObj).nextEmptyObject, firstEObj);
-							MAGIC.assign(firstEObj.prevEmptyObject, (SEmptyObject)eObj);
-							firstEObj = (SEmptyObject) eObj;
-						}
-						lastSeenEmptyObject = (SEmptyObject) eObj;
+			if(isInstance(obj, (SClassDesc) MAGIC.clssDesc("SEmptyObject"),false)) {
+				lastSeenEmptyObject = (SEmptyObject) obj;
+			} else if(obj._r_used==0) {
+				int freeMem = obj._r_relocEntries*MAGIC.ptrSize+obj._r_scalarSize;
+				//deletion because unused
+				//check if emptyObject even fits
+				if (freeMem < MAGIC.getInstScalarSize("SEmptyObject")
+						+ MAGIC.getInstRelocEntries("SEmptyObject") * MAGIC.ptrSize) {
+					//TODO: check if prev object is eObj and make bigger or check if we can combine with following object
+					if(isInstance(prevObject, (SClassDesc) MAGIC.clssDesc("SEmptyObject"), false)) {
+						//previous object is an empty object, so instead of becoming one ourselves we just tell it to expand
+						//only thing we need to correct are _next_ pointers
+						SEmptyObject eObj = (SEmptyObject) prevObject;
+						MAGIC.assign(eObj._r_scalarSize, eObj._r_scalarSize+freeMem);
+						MAGIC.assign(eObj._r_next, obj._r_next);
+						obj = prevObject;
 					}
+				} else {//eObj fits in hole
+					int objBaseAddr = MAGIC.cast2Ref(obj);
+					objBaseAddr -= obj._r_relocEntries*MAGIC.ptrSize;
+					int eObjAddr = objBaseAddr+MAGIC.getInstRelocEntries("SEmptyObject")*MAGIC.ptrSize;
+					//null memory
+					for (int i = objBaseAddr; i < eObjAddr+MAGIC.getInstScalarSize("SEmptyObject"); i++) {
+						MAGIC.wMem8(i, (byte)0);
+					}
+					Object eObj = MAGIC.cast2Obj(eObjAddr);
+					MAGIC.assign(eObj._r_type, MAGIC.clssDesc("SEmptyObject"));
+					MAGIC.assign(eObj._r_relocEntries, MAGIC.getInstRelocEntries("SEmptyObject"));
+					MAGIC.assign(eObj._r_scalarSize, freeMem-MAGIC.getInstRelocEntries("SEmptyObject")*MAGIC.ptrSize);
+					//normal pointers
+					if(prevObject!=null)
+						MAGIC.assign(prevObject._r_next, eObj);
+					MAGIC.assign(eObj._r_next, nextObject);
+					//eObj pointers
+					MAGIC.assign(((SEmptyObject)eObj).prevEmptyObject, lastSeenEmptyObject);
+					if(lastSeenEmptyObject!=null) {
+						MAGIC.assign(((SEmptyObject) eObj).nextEmptyObject, lastSeenEmptyObject.nextEmptyObject);
+						MAGIC.assign(lastSeenEmptyObject.nextEmptyObject, (SEmptyObject)eObj);
+						MAGIC.assign(((SEmptyObject) eObj).nextEmptyObject.prevEmptyObject, (SEmptyObject)eObj);
+					} else {
+						MAGIC.assign(((SEmptyObject) eObj).nextEmptyObject, firstEObj);
+						MAGIC.assign(firstEObj.prevEmptyObject, (SEmptyObject)eObj);
+						firstEObj = (SEmptyObject) eObj;
+					}
+					lastSeenEmptyObject = (SEmptyObject) eObj;
+					Serial.print('*');
+					Serial.print(eObj._r_scalarSize);
+					Serial.print(',');
+					Serial.print(freeMem);
+					Serial.print('\n');
 				}
 			} else {
 				MAGIC.assign(obj._r_used, 0);

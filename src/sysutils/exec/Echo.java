@@ -1,6 +1,7 @@
 package sysutils.exec;
 
 import graphics.Console;
+import hardware.Serial;
 import sysutils.Scheduler;
 
 class Echo extends Executable{
@@ -25,6 +26,7 @@ class Echo extends Executable{
 		}
 		Console.println();
 		Scheduler.markTaskAsFinished(this);
+		Serial.print("bye!");
 		return 0;
 	}
 	

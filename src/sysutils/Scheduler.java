@@ -1,6 +1,8 @@
 package sysutils;
 
 import graphics.Console;
+import hardware.Serial;
+import hardware.Time;
 import hardware.keyboard.Keyboard;
 import hardware.keyboard.KeyboardEvent;
 import hardware.keyboard.KeyboardEventRingBuffer;
@@ -8,7 +10,7 @@ import rte.DynamicRuntime;
 import sysutils.exec.Executable;
 
 public class Scheduler {
-	private static final int MAX_TASKS = 10000;
+	private static final int MAX_TASKS = 100;
 	private static final int MAX_TERMINALS = 10;
 	private static SchedulerTask[] runningTasks;
 	private static SystemTerminal currentTerminal;
@@ -38,6 +40,7 @@ public class Scheduler {
 			//run garbage collection
 			DynamicRuntime.collectGarbage();
 		}
+		Serial.print("?!?!");
 	}
 	
 	public static SchedulerTask addTask(Executable exec, SystemTerminal callee) {
@@ -69,6 +72,7 @@ public class Scheduler {
 		for (int i = 0; i < MAX_TASKS; i++) {
 			if (runningTasks[i] != null && !runningTasks[i].isFinished()) {
 				runningTasks[i].exec.execute();
+				Serial.print('m');
 			}
 		}
 	}

@@ -5,8 +5,11 @@ My course participation on the masters course "self-made operating system" at Un
 
 ## About
 This repository contains a basic operating system written in a dialect of Java as defined by [the SJC compiler](https://www.fam-frenz.de/stefan/compiler.html).
+![Preview](https://i.imgur.com/DtRMUN5.png)
+It currently handles memory management with garbage collection, can list attatched PCI devices, has some basic terminal 
+functionality
 ## Prerequisites
-Requires a full and functioning QEMU installation.
+Requires a full and functioning QEMU installation. See `Makefile` for configuration.
 
 ## Compiling and running
 Simply run `make install-toolchain` to install the SJC compiler and `make run` to compile and run the operating system in a QEMU virtual machine.

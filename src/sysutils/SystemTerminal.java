@@ -11,7 +11,7 @@ import utils.ASCIIControlSequences;
 import utils.ArrayUtils;
 
 public class SystemTerminal {
-	private static final int INPUT_BUFFER_SIZE = 320;
+	private static final int INPUT_BUFFER_SIZE = 3200;
 	private static final int COMMAND_HISTORY_SIZE = 20;
 	KeyboardEventRingBuffer buffer = new KeyboardEventRingBuffer();
 	private char[] inputBuffer = new char[INPUT_BUFFER_SIZE];
@@ -106,7 +106,8 @@ public class SystemTerminal {
 					if (!isBufferWhitespace()) { //buffer may contain a command, we have to check
 						//first, turn our buffer contents into a string and split it on spaces
 						String buf = String.compactString(inputBuffer);
-						String[] split = buf.split(' ');
+						String[] split = String.split(' ', buf);
+						/*
 						if (split.length > 0) {
 							Executable ex = ExecutableStore.fetchExecutable(split[0]);
 							if (ex!=null) {
@@ -118,7 +119,7 @@ public class SystemTerminal {
 							} else {
 								printExNotFound(split[0]);
 							}
-						}
+						}*/
 					}
 					updateHistoryPointer();
 					clearInputBuffer();
@@ -254,6 +255,7 @@ public class SystemTerminal {
 	
 	private void printExNotFound(String name) {
 		Console.print("no executable ".concat(name).concat(" found\n"));
+		printPrompt();
 	}
 	
 	private void clearInputBuffer() {

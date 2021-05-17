@@ -66,16 +66,19 @@ public class String {
 	}
 	
 	//splits a string into up to 128 substrings according to splitList
-	public String[] split(char delimiter) {
-		String[] splitStrings = new String[128];
+	public static String[] split(char delimiter, String s) {
+		/*
+		String[] splitStrings = new String[10];
 		int sIn = 0;
 		char[] currBuffer = new char[1024];
 		int cIn = 0;
-		for (int i = 0; i < this.length(); i++) {
-			char c = this.charAt(i);
+		for (int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
 			if (c==delimiter && cIn > 0) {
 				splitStrings[sIn] = String.compactString(currBuffer);
 				sIn++;
+				if(sIn>9)
+					MAGIC.inline(0xCC);
 				currBuffer = ArrayUtils.cleanBuffer(currBuffer);
 				cIn = 0;
 			} else {
@@ -85,10 +88,12 @@ public class String {
 		}
 		//gotta put the remainder of the buffer in a string after being done going over every char
 		splitStrings[sIn] = String.compactString(currBuffer);
-		sIn++;
+		sIn++;*/
+		//ab hier clean
+		int sIn = 5;
 		String[] retval = new String[sIn];
 		for (int i = 0; i < sIn; i++) {
-			retval[i] = splitStrings[i];
+			retval[i] = "foo";
 		}
 		return retval;
 	}

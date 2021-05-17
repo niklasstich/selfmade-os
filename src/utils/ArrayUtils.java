@@ -3,7 +3,7 @@ package utils;
 public class ArrayUtils {
 	public static char[] cleanBuffer(char[] buf) {
 		for (int i = 0; i < buf.length; i++) {
-			buf[i] = '\u0000';
+			buf[i] = '\0';
 		}
 		return buf;
 	}

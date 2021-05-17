@@ -21,7 +21,6 @@ public class Kernel {
 		Serial.print("initialized static variables\n");
 		//set interrupt flag ERST WENN PICs
 		MAGIC.inline(0xFB);
-		
 		Scheduler.init();
 		Serial.print("initialized scheduler... starting scheduling.\n");
 		//SETUP COMPLETE

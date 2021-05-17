@@ -9,9 +9,11 @@ public class ErrorScreen {
 	//9 registers with 4 bytes
 	private static final int EIP_OFFSET = 9*4;
 	private static final int STACK_BEGINNING = 0x9BFFC;
-	public static void BreakpointScreen(int ebp) {
+	
+	public static void showErrorScreen(int ebp, String reason) {
 		FillScreen();
-		Console.print("Breakpoint reached. Stackframe:\n");
+		Console.print("Error: ".concat(reason));
+		Console.print(". Stackframe:\n");
 		//load previous ebp and eip
 		int eip = MAGIC.rMem32(ebp+EIP_OFFSET);
 		ebp = MAGIC.rMem32(ebp);
@@ -24,6 +26,9 @@ public class ErrorScreen {
 			eip = MAGIC.rMem32(ebp + 4);
 			
 		} while (ebp <= STACK_BEGINNING && ebp > 0);
+	}
+	public static void BreakpointScreen(int ebp) {
+		showErrorScreen(ebp, "Breakpoint");
 	}
 	
 	//fills the entire screen with a red color
