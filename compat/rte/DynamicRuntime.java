@@ -362,7 +362,6 @@ public class DynamicRuntime {
 			//advance to next rootset obj
 		} while(rootObj != lastRootsetObject);
 	}
-	
 	private static void markRelocs(Object obj, int d) {
 		if(obj==null)return;
 		if(obj._r_used==1)return;
@@ -375,11 +374,12 @@ public class DynamicRuntime {
 				continue;
 			}
 			Object o = MAGIC.cast2Obj(addr);
-			if(o==obj._r_next||o==obj._r_type) {
+			if(o==obj._r_next||o==obj._r_type||o==null) {
 				continue;
 			}
+			//sanity check if o is an object, then call recursively on o
 			if(!isInstance(o, (SClassDesc) MAGIC.clssDesc("Object"), false))
-				MAGIC.inline(0xCC);
+				continue;
 			markRelocs(o,d+1);
 		}
 	}
@@ -387,8 +387,10 @@ public class DynamicRuntime {
 	private static void sweepGarbage(Object obj) {
 		SEmptyObject lastSeenEmptyObject = null;
 		Object prevObject = null;
-		Object nextObject = obj._r_next;
+		Object nextObject;
+		if(obj==null) MAGIC.inline(0xCC);
 		while(obj!=null){
+			nextObject = obj._r_next;
 			if(isInstance(obj, (SClassDesc) MAGIC.clssDesc("SEmptyObject"),false)) {
 				lastSeenEmptyObject = (SEmptyObject) obj;
 			} else if(obj._r_used==0) {
@@ -401,12 +403,17 @@ public class DynamicRuntime {
 					if(isInstance(prevObject, (SClassDesc) MAGIC.clssDesc("SEmptyObject"), false)) {
 						//previous object is an empty object, so instead of becoming one ourselves we just tell it to expand
 						//only thing we need to correct are _next_ pointers
+						Serial.print('f');
 						SEmptyObject eObj = (SEmptyObject) prevObject;
+						Serial.print(" deleting:");
+						Serial.print(obj._r_type.name);
 						MAGIC.assign(eObj._r_scalarSize, eObj._r_scalarSize+freeMem);
 						MAGIC.assign(eObj._r_next, obj._r_next);
 						obj = prevObject;
 					}
 				} else {//eObj fits in hole
+					Serial.print(" deleting:");
+					Serial.print(obj._r_type.name);
 					int objBaseAddr = MAGIC.cast2Ref(obj);
 					objBaseAddr -= obj._r_relocEntries*MAGIC.ptrSize;
 					int eObjAddr = objBaseAddr+MAGIC.getInstRelocEntries("SEmptyObject")*MAGIC.ptrSize;
@@ -442,10 +449,9 @@ public class DynamicRuntime {
 				}
 			} else {
 				MAGIC.assign(obj._r_used, 0);
+				prevObject = obj;
 			}
-			prevObject = obj;
 			obj = nextObject;
-			nextObject = obj._r_next;
 		}
 	}
 }

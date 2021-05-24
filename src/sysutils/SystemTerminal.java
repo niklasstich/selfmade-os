@@ -106,8 +106,7 @@ public class SystemTerminal {
 					if (!isBufferWhitespace()) { //buffer may contain a command, we have to check
 						//first, turn our buffer contents into a string and split it on spaces
 						String buf = String.compactString(inputBuffer);
-						String[] split = String.split(' ', buf);
-						/*
+						String[] split = buf.split(' ', buf);
 						if (split.length > 0) {
 							Executable ex = ExecutableStore.fetchExecutable(split[0]);
 							if (ex!=null) {
@@ -119,7 +118,7 @@ public class SystemTerminal {
 							} else {
 								printExNotFound(split[0]);
 							}
-						}*/
+						}
 					}
 					updateHistoryPointer();
 					clearInputBuffer();

@@ -1,5 +1,6 @@
 package hardware;
 
+//Class provided by Prof. Frenz
 public class Serial {
 	public static final int BPSBASE = 115200;
 

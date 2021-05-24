@@ -24,7 +24,7 @@ public class Scheduler {
 		for (int i = 0; i < MAX_TERMINALS; i++) {
 			terminalList[i] = new SystemTerminal();
 		}
-		setCurrentTerminal(0);
+		currentTerminal = terminalList[0];
 	}
 	
 	public static void startScheduling() {

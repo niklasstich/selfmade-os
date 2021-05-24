@@ -66,8 +66,17 @@ public class String {
 	}
 	
 	//splits a string into up to 128 substrings according to splitList
-	public static String[] split(char delimiter, String s) {
-		/*
+	public class CharSplit {
+		public final String leftSide;
+		public final String rightSide;
+		public final char delimiter;
+		CharSplit(String l, String r, char d) {
+			leftSide = l;
+			rightSide = r;
+			delimiter = d;
+		}
+	}
+	public String[] split(char delimiter, String s) {
 		String[] splitStrings = new String[10];
 		int sIn = 0;
 		char[] currBuffer = new char[1024];
@@ -88,13 +97,12 @@ public class String {
 		}
 		//gotta put the remainder of the buffer in a string after being done going over every char
 		splitStrings[sIn] = String.compactString(currBuffer);
-		sIn++;*/
-		//ab hier clean
-		int sIn = 5;
+		sIn++;
 		String[] retval = new String[sIn];
 		for (int i = 0; i < sIn; i++) {
-			retval[i] = "foo";
+			retval[i] = splitStrings[i];
 		}
+		//CharSplit sp = new CharSplit("foo", "bar", ' ');
 		return retval;
 	}
 	
