@@ -47,7 +47,7 @@ public class VirtualMemory {
 		
 		//PAGEDIR
 		for(int i = 0; i<PAGECOUNT; i++) {
-			//right-shift i by 12 to align to 4k boundaries (4096)
+			//left-shift i by 12 to align to 4k boundaries (4096)
 			MAGIC.wMem32(i*4+PAGEDIRECTORY_BASEADDR, ((i<<12)+PAGETABLE_BASEADDR)|0x3);
 		}
 		//PAGETABLE
