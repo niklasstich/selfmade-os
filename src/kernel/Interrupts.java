@@ -7,7 +7,7 @@ import hardware.keyboard.Keyboard;
 
 public class Interrupts {
 	//segment start
-	private static final int IDT_START = 0x09000;
+	private static final int IDT_START = 0x09000; //48*8 bytes =
 	private final static int MASTER = 0x20, SLAVE = 0xA0;
 	
 	public static void prepareInterrupts() {
@@ -51,7 +51,7 @@ public class Interrupts {
 		MAGIC.inline(0x0F, 0x01, 0x5D);
 		MAGIC.inlineOffset(1, tmp);
 	}
-	
+	//every table entry is 64 bits - 8 byte
 	private static void createTableEntry(int i, int handler) {
 		//low 16 bit offset
 		MAGIC.wMem16(Interrupts.IDT_START+i*8, (short) (handler&0x0000FFFF));
@@ -156,6 +156,15 @@ public class Interrupts {
 	@SJC.Interrupt
 	private static void pageFaultHandler() {
 		Console.debug("page fault");
+		int CR2 = VirtualMemory.getCR2();
+		if((CR2&0x1)>0)
+			Console.debug("Present");
+		else
+			Console.debug("not present");
+		if((CR2&0x2)>0)
+			Console.debug("Writable");
+		else
+			Console.debug("not writable");
 		while (true);
 	}
 	//endregion

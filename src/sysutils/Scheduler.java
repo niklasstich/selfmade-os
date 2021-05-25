@@ -40,7 +40,6 @@ public class Scheduler {
 			//run garbage collection
 			DynamicRuntime.collectGarbage();
 		}
-		Serial.print("?!?!");
 	}
 	
 	public static SchedulerTask addTask(Executable exec, SystemTerminal callee) {
@@ -72,7 +71,6 @@ public class Scheduler {
 		for (int i = 0; i < MAX_TASKS; i++) {
 			if (runningTasks[i] != null && !runningTasks[i].isFinished()) {
 				runningTasks[i].exec.execute();
-				Serial.print('m');
 			}
 		}
 	}

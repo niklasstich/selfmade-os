@@ -6,7 +6,7 @@ import hardware.Serial;
 import hardware.Time;
 import rte.DynamicRuntime;
 import sysutils.Scheduler;
-import sysutils.SystemTerminal;
+import sysutils.exec.ExecutableStore;
 
 public class Kernel {
 	private static final int GDTBASE = 0x10000;
@@ -15,7 +15,10 @@ public class Kernel {
 		DynamicRuntime.initializeEmptyObjects();
 		Serial.print("initialized empty objects... ");
 		Interrupts.prepareInterrupts();
+		Serial.print("initialized virtual memory... ");
+		VirtualMemory.enableVirtualMemory();
 		Serial.print("initialized interrupts... ");
+		ExecutableStore.initializeStore();
 		MAGIC.doStaticInit();
 		//testConsole();
 		Serial.print("initialized static variables\n");
@@ -62,5 +65,9 @@ public class Kernel {
 		}
 		Time.sleep(2000);
 		BIOS.enterTextMode();
+	}
+	
+	private static void enableVirtualMemory() {
+	
 	}
 }

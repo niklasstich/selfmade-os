@@ -403,9 +403,8 @@ public class DynamicRuntime {
 					if(isInstance(prevObject, (SClassDesc) MAGIC.clssDesc("SEmptyObject"), false)) {
 						//previous object is an empty object, so instead of becoming one ourselves we just tell it to expand
 						//only thing we need to correct are _next_ pointers
-						Serial.print('f');
 						SEmptyObject eObj = (SEmptyObject) prevObject;
-						Serial.print(" deleting:");
+						Serial.print(" fast-delete:");
 						Serial.print(obj._r_type.name);
 						MAGIC.assign(eObj._r_scalarSize, eObj._r_scalarSize+freeMem);
 						MAGIC.assign(eObj._r_next, obj._r_next);
@@ -434,7 +433,8 @@ public class DynamicRuntime {
 					if(lastSeenEmptyObject!=null) {
 						MAGIC.assign(((SEmptyObject) eObj).nextEmptyObject, lastSeenEmptyObject.nextEmptyObject);
 						MAGIC.assign(lastSeenEmptyObject.nextEmptyObject, (SEmptyObject)eObj);
-						MAGIC.assign(((SEmptyObject) eObj).nextEmptyObject.prevEmptyObject, (SEmptyObject)eObj);
+						if(((SEmptyObject)eObj).nextEmptyObject!=null)
+							MAGIC.assign(((SEmptyObject) eObj).nextEmptyObject.prevEmptyObject, (SEmptyObject)eObj);
 					} else {
 						MAGIC.assign(((SEmptyObject) eObj).nextEmptyObject, firstEObj);
 						MAGIC.assign(firstEObj.prevEmptyObject, (SEmptyObject)eObj);

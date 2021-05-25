@@ -26,7 +26,6 @@ class Echo extends Executable{
 		}
 		Console.println();
 		Scheduler.markTaskAsFinished(this);
-		Serial.print("bye!");
 		return 0;
 	}
 	

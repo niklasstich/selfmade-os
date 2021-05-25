@@ -6,25 +6,26 @@ import sysutils.Scheduler;
 
 //executablestore is itself an executable, because it can list all executables to the console
 public class ExecutableStore extends Executable {
-	static {
-		//first initialize the array, otherwise we shit the bed
-		execFactories = new ExecutableFactory[1024];
-		addExecutableFactory(new ExecutableFactory() {
-			@Override
-			Executable createExecutable() {
-				return new ExecutableStore();
-			}
-			
-			@Override
-			String getName() {
-				return "lsexec";
-			}
-		});
-	}
 	
 	private static ExecutableFactory[] execFactories;
 	private static int insertionIndex;
-	
+	public static void initializeStore() {
+		//first initialize the array, otherwise we shit the bed
+		if(execFactories==null){
+			execFactories = new ExecutableFactory[1024];
+			addExecutableFactory(new ExecutableFactory() {
+				@Override
+				Executable createExecutable() {
+					return new ExecutableStore();
+				}
+				
+				@Override
+				String getName() {
+					return "lsexec";
+				}
+			});
+		}
+	}
 	
 	public static void addExecutableFactory(ExecutableFactory ex) {
 		execFactories[insertionIndex++] = ex;
