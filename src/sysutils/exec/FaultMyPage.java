@@ -20,14 +20,15 @@ class FaultMyPage extends Executable {
 	}
 	@Override
 	public int execute() {
-		//for last page
 		int addr = 0x0;
+		//for last page
 		if(args.length>0 && args[0].equals("-l")){
 			addr = 0xFFFFFFFF;
-			Serial.print('l');
 		}
-		Object o = MAGIC.cast2Obj(addr);
-		o = o._r_next;
+		if(args.length>0 && args[0].equals("-w")) {
+			MAGIC.wMem32(addr, 0);
+		}
+		int i = MAGIC.rMem32(addr);
 		return 0;
 	}
 }

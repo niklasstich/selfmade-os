@@ -124,7 +124,7 @@ public class Interrupts {
 		int ebp = 0;
 		MAGIC.inline(0x89,0x6D);
 		MAGIC.inlineOffset(1,ebp);
-		ErrorScreen.showErrorScreen(ebp, "i out of range");
+		ErrorScreen.showErrorScreenWithStackframe(ebp, "i out of range");
 		Serial.print("i out of range");
 		while (true);
 	}
@@ -134,7 +134,7 @@ public class Interrupts {
 		int ebp = 0;
 		MAGIC.inline(0x89,0x6D);
 		MAGIC.inlineOffset(1,ebp);
-		ErrorScreen.showErrorScreen(ebp, "invalid opcode");
+		ErrorScreen.showErrorScreenWithStackframe(ebp, "invalid opcode");
 		Serial.print("invalid opcode");
 		while (true);
 	}
@@ -154,17 +154,9 @@ public class Interrupts {
 	}
 	//hex 0E page fault
 	@SJC.Interrupt
-	private static void pageFaultHandler() {
-		Console.debug("page fault");
+	private static void pageFaultHandler(int errorCode) {
 		int CR2 = VirtualMemory.getCR2();
-		if((CR2&0x1)>0)
-			Console.debug("Present");
-		else
-			Console.debug("not present");
-		if((CR2&0x2)>0)
-			Console.debug("Writable");
-		else
-			Console.debug("not writable");
+		ErrorScreen.showPageFaultError(errorCode, CR2);
 		while (true);
 	}
 	//endregion

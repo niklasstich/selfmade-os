@@ -32,6 +32,7 @@ public class Scheduler {
 		while (true) {
 			//first, forward all inputs to current terminal
 			forwardInputs();
+			MAGIC.inline(0xCC);
 			//call the current terminal
 			currentTerminal.focus();
 			//execute any tasks that are not marked as finished
