@@ -23,10 +23,11 @@ public class ErrorScreen {
 		showErrorScreenWithStackframe(ebp, "Breakpoint");
 	}
 	
+	@SJC.Inline
 	private static void printStackframe(int ebp) {
 		//load previous ebp and eip
 		int eip = MAGIC.rMem32(ebp+EIP_OFFSET);
-		ebp = MAGIC.rMem32(ebp);
+		//ebp = MAGIC.rMem32(ebp);
 		do {
 			//print stackframe
 			Console.print("ebp:"); Console.printHex(ebp);
@@ -39,9 +40,15 @@ public class ErrorScreen {
 				Console.print(", method cannot be resolved");
 			}
 			Console.print('\n');
+			//check that we don't land in the first page
 			ebp = MAGIC.rMem32(ebp);
+			Serial.print("EBP: ");
+			Serial.printHex(ebp,8);
+			Serial.print('\n');
 			eip = MAGIC.rMem32(ebp + 4);
-			
+			Serial.print("EIP: ");
+			Serial.printHex(eip,8);
+			Serial.print('\n');
 		} while (ebp <= STACK_BEGINNING && ebp > 0);
 	}
 	

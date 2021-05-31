@@ -8,7 +8,6 @@ public class VirtualMemory {
 	private static final int CR0_BITMASK = 0x80010000;
 	private static final int PAGECOUNT = 1024;
 	private static final int PAGEDIRECTORY_BASEADDR = 0xA000; //1024*32 bit = 4k
-	//private static final int PAGETABLE_BASEADDR = 0xB000; //1024*32 bit = 4k
 	private static PageTable pt;
 	static void enableVirtualMemory() {
 		writePageDirectoryAndTable();

@@ -5,10 +5,12 @@ import rte.SMthdBlock;
 import rte.SPackage;
 
 public class SymbolResolution {
+	@SJC.Inline
 	public static SMthdBlock findMethodBlock(int addr){
 		return searchPackageRecursive(addr, SPackage.root);
 	}
 	
+	@SJC.Inline
 	private static SMthdBlock searchPackageRecursive(int addr, SPackage pack) {
 		SMthdBlock retval = null;
 		if(pack.subPacks!=null) {
@@ -18,12 +20,12 @@ public class SymbolResolution {
 		//go through our own classes
 		retval = searchClass(addr, pack.units);
 		if (retval != null) return retval;
-		pack = pack.nextPack;
 		if(pack.nextPack != null)
 			return searchPackageRecursive(addr, pack.nextPack);
 		return null;
 	}
 	
+	@SJC.Inline
 	private static SMthdBlock searchClass(int addr, SClassDesc cl) {
 		SMthdBlock retval = null;
 		while(cl!=null) {
@@ -35,6 +37,8 @@ public class SymbolResolution {
 		}
 		return null;
 	}
+	
+	@SJC.Inline
 	private static SMthdBlock checkMethods(int addr, SMthdBlock mthd) {
 		while(mthd != null) {
 			int startAddr = MAGIC.cast2Ref(mthd);

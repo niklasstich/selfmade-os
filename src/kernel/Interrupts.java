@@ -110,6 +110,7 @@ public class Interrupts {
 		MAGIC.inline(0x89,0x6D);
 		MAGIC.inlineOffset(1,ebp);
 		ErrorScreen.BreakpointScreen(ebp);
+		Console.println("\nEXECUTION STOPPED");
 		while (true);
 	}
 	//hex 04 INTO (overflow)
