@@ -11,9 +11,9 @@ public class SymbolResolution {
 	private static SMthdBlock bootloader;
 	static {
 		cd = new SClassDesc();
-		cd.name = "bootloader";
+		cd.name = "Bootloader";
 		bootloader = new SMthdBlock();
-		bootloader.namePar = "Bootloader()";
+		bootloader.namePar = "bootloader()";
 		bootloader.nextMthd = null;
 		bootloader.owner = cd;
 	}
