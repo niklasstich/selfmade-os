@@ -5,8 +5,22 @@ import rte.SMthdBlock;
 import rte.SPackage;
 
 public class SymbolResolution {
+	private static final int BOOTLOADER_START = 0x7C00;
+	private static final int BOOTLOADER_END = 0x7DFF;
+	private static SClassDesc cd;
+	private static SMthdBlock bootloader;
+	static {
+		cd = new SClassDesc();
+		cd.name = "bootloader";
+		bootloader = new SMthdBlock();
+		bootloader.namePar = "Bootloader()";
+		bootloader.nextMthd = null;
+		bootloader.owner = cd;
+	}
 	@SJC.Inline
 	public static SMthdBlock findMethodBlock(int addr){
+		if(addr >= BOOTLOADER_START && addr <= BOOTLOADER_END)
+			return bootloader;
 		return searchPackageRecursive(addr, SPackage.root);
 	}
 	
