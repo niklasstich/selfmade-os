@@ -65,6 +65,19 @@ public class String {
 		return true;
 	}
 	
+	public String removeNewlines() {
+		char[] buf = new char[this.length()];
+		int readIndex = 0;
+		int writeIndex = 0;
+		for (;readIndex<this.length();readIndex++) {
+			if(this.charAt(readIndex)!='\n') {
+				buf[writeIndex] = this.charAt(readIndex);
+				writeIndex++;
+			}
+		}
+		return compactString(buf);
+	}
+	
 	//splits a string into up to 128 substrings according to splitList
 	public class CharSplit {
 		public final String leftSide;
