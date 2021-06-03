@@ -8,12 +8,12 @@ class FaultMyPage extends Executable {
 	static {
 		ExecutableStore.addExecutableFactory(new ExecutableFactory() {
 			@Override
-			Executable createExecutable() {
+			public Executable createExecutable() {
 				return new FaultMyPage();
 			}
 			
 			@Override
-			String getName() {
+			public String getName() {
 				return "faultme";
 			}
 		});

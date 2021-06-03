@@ -7,12 +7,12 @@ public class TextEditor extends Executable {
 	static {
 		ExecutableStore.addExecutableFactory(new ExecutableFactory() {
 			@Override
-			Executable createExecutable() {
+			public Executable createExecutable() {
 				return new TextEditor();
 			}
 			
 			@Override
-			String getName() {
+			public String getName() {
 				return "vim";
 			}
 		});

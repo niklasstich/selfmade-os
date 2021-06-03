@@ -1,27 +1,27 @@
-package sysutils.exec;
+package roguelike;
 
-import graphics.Console;
-import sysutils.Scheduler;
+import sysutils.exec.Executable;
+import sysutils.exec.ExecutableFactory;
+import sysutils.exec.ExecutableStore;
 
-public class ClearConsole extends Executable{
+public class RogueExec extends Executable {
 	static {
 		ExecutableStore.addExecutableFactory(new ExecutableFactory() {
+			
 			@Override
 			public Executable createExecutable() {
-				return new ClearConsole();
+				return new RogueExec();
 			}
 			
 			@Override
 			public String getName() {
-				return "clear";
+				return "rogue";
 			}
 		});
 	}
+	
 	@Override
 	public int execute() {
-		Console.clearConsole();
-		Scheduler.markTaskAsFinished(this);
 		return 0;
 	}
-	
 }

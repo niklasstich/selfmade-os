@@ -6,12 +6,12 @@ class Debug extends Executable {
 	static {
 		ExecutableStore.addExecutableFactory(new ExecutableFactory() {
 			@Override
-			Executable createExecutable() {
+			public Executable createExecutable() {
 				return new Debug();
 			}
 			
 			@Override
-			String getName() {
+			public String getName() {
 				return "debughalt";
 			}
 		});

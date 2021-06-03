@@ -8,12 +8,12 @@ class Echo extends Executable{
 	static {
 		ExecutableStore.addExecutableFactory(new ExecutableFactory() {
 			@Override
-			Executable createExecutable() {
+			public Executable createExecutable() {
 				return new Echo();
 			}
 			
 			@Override
-			String getName() {
+			public String getName() {
 				return "echo";
 			}
 		});

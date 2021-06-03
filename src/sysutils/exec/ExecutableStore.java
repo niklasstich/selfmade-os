@@ -15,12 +15,12 @@ public class ExecutableStore extends Executable {
 			execFactories = new ExecutableFactory[1024];
 			addExecutableFactory(new ExecutableFactory() {
 				@Override
-				Executable createExecutable() {
+				public Executable createExecutable() {
 					return new ExecutableStore();
 				}
 				
 				@Override
-				String getName() {
+				public String getName() {
 					return "lsexec";
 				}
 			});

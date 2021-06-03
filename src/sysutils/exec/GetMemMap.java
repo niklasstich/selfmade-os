@@ -8,12 +8,12 @@ class GetMemMap extends Executable{
 	static {
 		ExecutableStore.addExecutableFactory(new ExecutableFactory() {
 			@Override
-			Executable createExecutable() {
+			public Executable createExecutable() {
 				return new GetMemMap();
 			}
 			
 			@Override
-			String getName() {
+			public String getName() {
 				return "memmap";
 			}
 		});

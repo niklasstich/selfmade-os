@@ -1,6 +1,6 @@
 package sysutils.exec;
 
 public abstract class ExecutableFactory {
-	abstract Executable createExecutable();
-	abstract String getName();
+	public abstract Executable createExecutable();
+	public abstract String getName();
 }
