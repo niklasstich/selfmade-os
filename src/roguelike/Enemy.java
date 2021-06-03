@@ -1,0 +1,4 @@
+package roguelike;
+
+class Enemy {
+}
