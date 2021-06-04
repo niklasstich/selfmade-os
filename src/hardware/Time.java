@@ -18,4 +18,24 @@ public class Time {
 		while (systemTime < now+ms);
 		
 	}
+	
+	//reads and returns clock counter
+	public static long readTSC() {
+		long res=0l;
+		MAGIC.inline(0x0F, 0x31); //rdtsc
+		MAGIC.inline(0x89, 0x55); MAGIC.inlineOffset(1, res, 4);
+		MAGIC.inline(0x89, 0x45); MAGIC.inlineOffset(1, res, 0);
+		return res;
+	}
+	
+	//reads and returns RTC time in seconds
+	public static long readRTC() {
+		MAGIC.wIOs8(0x70, (byte)4);
+		int hour=(int)MAGIC.rIOs8(0x71);
+        MAGIC.wIOs8(0x70, (byte)2);
+        int minute=(int)MAGIC.rIOs8(0x71);
+        MAGIC.wIOs8(0x70, (byte)0);
+        int second=(int)MAGIC.rIOs8(0x71);
+        return (long)((hour*60+minute)*60+second);
+	}
 }

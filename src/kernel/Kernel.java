@@ -2,6 +2,7 @@ package kernel;
 
 import graphics.Console;
 import graphics.ConsoleColors;
+import hardware.Random;
 import hardware.Serial;
 import hardware.Time;
 import rte.DynamicRuntime;
@@ -27,6 +28,7 @@ public class Kernel {
 		Scheduler.init();
 		Serial.print("initialized scheduler... starting scheduling.\n");
 		//SETUP COMPLETE
+		Random.srand((int) Time.getSystemTime());
 		Scheduler.startScheduling();
 	}
 	
