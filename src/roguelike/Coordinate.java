@@ -1,0 +1,17 @@
+package roguelike;
+
+class Coordinate {
+	private final int posx, posy;
+	Coordinate(int posx, int posy) {
+		this.posx = posx;
+		this.posy = posy;
+	}
+	
+	public int getPosx() {
+		return posx;
+	}
+	
+	public int getPosy() {
+		return posy;
+	}
+}

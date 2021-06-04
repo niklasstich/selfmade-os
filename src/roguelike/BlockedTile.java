@@ -5,4 +5,9 @@ public class BlockedTile extends Tile {
 	char getSymbol() {
 		return ' ';
 	}
+	
+	@Override
+	boolean isPassable() {
+		return false;
+	}
 }

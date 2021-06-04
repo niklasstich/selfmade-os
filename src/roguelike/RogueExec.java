@@ -20,16 +20,22 @@ public class RogueExec extends Executable {
 			}
 		});
 	}
-	
+	@Override
+	public final boolean acceptsKeyboardInputs = true;
 	//game state
 	private Floor currFloor;
 	private Player player;
 	
 	@Override
 	public int execute() {
-		currFloor = new Floor(Resources.returnBasicFloor());
-		currFloor.renderFloor();
-		while (true);
+		//get a new floor if there is no floor currently
+		//TODO: generate the floor randomly
+		if(currFloor == null) {
+			currFloor = new Floor(Resources.returnBasicFloor());
+			currFloor.renderFloor();
+		}
+		//if player isn't initialized, create new object with random coords on a valid Tile
+		//Coordinate spawn = currFloor.getValidSpawn();
 		Scheduler.markTaskAsFinished(this);
 		return 0;
 	}

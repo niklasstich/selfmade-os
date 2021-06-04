@@ -1,7 +1,7 @@
 package hardware;
 
 public class Random {
-	private static final int staticSeed;
+	private static int staticSeed;
 	private static int dynamicSeed;
 	private static final int MAX_RAND_BEFORE_RESEED = 50;
 	private static int randUntilReseed = MAX_RAND_BEFORE_RESEED;

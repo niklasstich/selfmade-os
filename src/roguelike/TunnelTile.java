@@ -1,10 +1,10 @@
 package roguelike;
 
-public class WallTile extends Tile {
-	
+public class TunnelTile extends Tile {
+	static final char sym = 178;
 	@Override
 	char getSymbol() {
-		return '#';
+		return TunnelTile.sym;
 	}
 	
 	@Override

@@ -10,4 +10,9 @@ class FloorTile extends Tile {
 		return '.';
 	}
 	
+	@Override
+	boolean isPassable() {
+		return true;
+	}
+	
 }
