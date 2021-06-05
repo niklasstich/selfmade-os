@@ -22,6 +22,10 @@ public abstract class Console {
 		VideoController.disableCursor();
 	}
 	
+	public static void enableCursor() {
+		VideoController.enableCursor();
+	}
+	
 	//dynamische Methoden
 	
 	public static void setColor(int fg, int bg, boolean blinking) {

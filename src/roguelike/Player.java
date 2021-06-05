@@ -1,54 +1,77 @@
 package roguelike;
 
-public class Player {
+import graphics.Console;
+import graphics.ConsoleColors;
+
+class Player {
 	//position
-	private int posx, posy;
+	private Coordinate coord, lastCoord;
 	//player stats
 	private int health, maxHealth;
 	private int strength, defense, intelligence;
-	Player(int posx, int posy) {
-		this.posx = posx;
-		this.posy = posy;
+	Player(Coordinate coord) {
+		this.coord = coord;
 		maxHealth = health = Resources.defaultHealth;
 		strength = Resources.defaultStr;
 		defense = Resources.defaultDef;
 		intelligence = Resources.defaultInt;
 	}
 	
-	
-	public int getPosx() {
-		return posx;
+	static char getSymbol() {
+		return '@';
 	}
 	
-	public void setPosx(int posx) {
-		this.posx = posx;
+	
+	void setPos(Coordinate coord) {
+		lastCoord = this.coord;
+		this.coord = coord;
 	}
 	
-	public int getPosy() {
-		return posy;
-	}
-	
-	public void setPosy(int posy) {
-		this.posy = posy;
-	}
-	
-	public int getHealth() {
+	int getHealth() {
 		return health;
 	}
 	
-	public int getMaxHealth() {
+	int getMaxHealth() {
 		return maxHealth;
 	}
 	
-	public int getStrength() {
+	int getStrength() {
 		return strength;
 	}
 	
-	public int getDefense() {
+	int getDefense() {
 		return defense;
 	}
 	
-	public int getIntelligence() {
+	int getIntelligence() {
 		return intelligence;
+	}
+	
+	Coordinate getCoord() {
+		return coord;
+	}
+	
+	Coordinate getLastCoord() {
+		return lastCoord;
+	}
+	
+	//see Resources for direction constants
+	void move(int direction, Floor floor) {
+		//TODO: collision
+		//first, check if we can move
+		//get new coord
+		Coordinate newCoord;
+		switch (direction) {
+			case Resources.DIR_UP: newCoord = new Coordinate(coord.getPosx(), coord.getPosy()-1); break;
+			case Resources.DIR_DOWN: newCoord = new Coordinate(coord.getPosx(), coord.getPosy()+1); break;
+			case Resources.DIR_LEFT: newCoord = new Coordinate(coord.getPosx()-1, coord.getPosy()); break;
+			case Resources.DIR_RIGHT: newCoord = new Coordinate(coord.getPosx()+1, coord.getPosy()); break;
+			default: return;
+		}
+		//ask floor if coordinate is a valid tile
+		if(!floor.isCoordinatePassable(newCoord)) return;
+		//if so, apply
+		lastCoord = coord;
+		coord = newCoord;
 	}
 }

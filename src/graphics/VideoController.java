@@ -109,6 +109,14 @@ public class VideoController {
 		MAGIC.wIOs8(0x3D5, (byte)0x20);
 	}
 	
+	public static void enableCursor() {
+		MAGIC.wIOs8(0x3D4, (byte) 0x0A);
+		MAGIC.wIOs8(0x3D5, (byte) ((MAGIC.rIOs8(0x3D5)&0xC0)|14));
+		
+		MAGIC.wIOs8(0x3D4, (byte) 0x0B);
+		MAGIC.wIOs8(0x3D5, (byte) ((MAGIC.rIOs8(0x3D5)&0xE0)|15));
+	}
+	
 	@SJC.Inline
 	private static void setCharacterAtPos(int pos, int as, int cl) {
 		vidMem.pos[pos].ascii = (byte)as;
@@ -124,4 +132,6 @@ public class VideoController {
 	public static int getYPos() {
 		return videoMemoryPosition/VideoMemory.VIDEO_MEMORY_COLUMNS;
 	}
+	
+	
 }

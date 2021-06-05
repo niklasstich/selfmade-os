@@ -89,7 +89,6 @@ public class SystemTerminal {
 				}
 			}
 		}
-		//TODO: rewrite to taking inputs out of our own buffer instead of keyboard buffer directly
 		while (buffer.canRead()) {
 			KeyboardEvent kev = buffer.readEvent();
 			switch (kev.KEYCODE) { //special handling
