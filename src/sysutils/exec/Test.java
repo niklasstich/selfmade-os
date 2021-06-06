@@ -2,6 +2,7 @@ package sysutils.exec;
 
 import graphics.Console;
 import sysutils.Scheduler;
+import tests.StringBufferTest;
 
 public class Test extends Executable{
 	static {
@@ -19,7 +20,8 @@ public class Test extends Executable{
 	}
 	@Override
 	public int execute() {
-		
+		StringBufferTest.test();
+		while(true);
 		//https://wiki.osdev.org/VGA_Fonts#Get_from_VGA_RAM_directly
 		//clear even/odd
 		MAGIC.wIOs8(0x3CE, (byte) 0x5);
@@ -42,7 +44,6 @@ public class Test extends Executable{
 		MAGIC.wIOs8(0x3CE8, (byte) 0x1005);
 		MAGIC.wIOs8(0x3CE8, (byte) 0xE06);
 		Console.print("@AB");
-		while(true);
 		Scheduler.markTaskAsFinished(this);
 		return 0;
 	}

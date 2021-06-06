@@ -1,5 +1,6 @@
 package java.lang;
 
+import hardware.Serial;
 import utils.ArrayUtils;
 
 public class String {
@@ -9,6 +10,8 @@ public class String {
 		this.value = value;
 		this.count = value.length;
 	}
+	
+	//returns a string with compacted value, removing all null bytes at the end
 	public static String compactString(char[] value) {
 		int realLen = value.length - 1;
 		while (true) {
@@ -18,6 +21,20 @@ public class String {
 		char[] compactValue = new char[realLen+1];
 		for (int i = 0; i <= realLen; i++) {
 			compactValue[i] = value[i];
+		}
+		return new String(compactValue);
+	}
+	public static String compactStringFront(char[] value) {
+		int realStart = 0;
+		while(true) {
+			if(value[realStart] == 0) realStart++;
+			else break;
+		}
+		char[] compactValue = new char[value.length-realStart];
+		int realI = realStart;
+		for(int i = 0; i < value.length - realI; i++) {
+			compactValue[i] = value[realStart];
+			realStart++;
 		}
 		return new String(compactValue);
 	}

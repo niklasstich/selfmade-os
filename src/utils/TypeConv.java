@@ -27,6 +27,14 @@ public class TypeConv {
 		return result;
 	}
 	
+	public static String byteToString(byte b) {
+		return longToString(b);
+	}
+	
+	public static String shortToString(short s) {
+		return longToString(s);
+	}
+	
 	public static String intToString(int i) {
 		return longToString(i);
 	}
@@ -47,6 +55,6 @@ public class TypeConv {
 		}
 		//add minus if number is negative
 		if (l<0) output[index] = '-';
-		return (new String(output));
+		return String.compactStringFront(output);
 	}
 }
