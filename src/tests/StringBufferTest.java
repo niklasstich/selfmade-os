@@ -49,6 +49,7 @@ public class StringBufferTest {
 			fail("append string");
 			return false;
 		}
+		//TODO: capacity tests, and appending multiple times
 		Serial.println("StringBuilder test successful.");
 		return true;
 	}
