@@ -368,15 +368,12 @@ public class DynamicRuntime {
 		MAGIC.assign(obj._r_used, 1);
 		int baseAddr = MAGIC.cast2Ref(obj);
 		baseAddr-=MAGIC.ptrSize;
-		for (int i = 0; i < obj._r_relocEntries; i++) {
+		for (int i = 2; i < obj._r_relocEntries; i++) {
 			int addr = MAGIC.rMem32(baseAddr-i*MAGIC.ptrSize);
 			if(addr == 0) {
 				continue;
 			}
 			Object o = MAGIC.cast2Obj(addr);
-			if(o==obj._r_next||o==obj._r_type||o==null) {
-				continue;
-			}
 			//sanity check if o is an object, then call recursively on o
 			if(!isInstance(o, (SClassDesc) MAGIC.clssDesc("Object"), false))
 				continue;
