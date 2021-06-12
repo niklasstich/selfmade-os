@@ -1,6 +1,7 @@
 package roguelike;
 
 import graphics.Console;
+import roguelike.entities.Player;
 
 class MessageStatPrinter {
 	static final int MESSAGEBAR_LINE = 21;
@@ -18,8 +19,20 @@ class MessageStatPrinter {
 		}
 	}
 	
-	public static void printStats() {
+	public static void printStats(Player p) {
 		Console.setCursor(0, CHARACTER_STATS_LINE);
-		
+		//craft string first for performance reasons
+		StringBuilder sb = new StringBuilder("  Health: ");
+		sb.append(p.getHealth());
+		sb.append("/");
+		sb.append(p.getMaxHealth());
+		sb.append(" Stats: ");
+		sb.append(p.getStrength());
+		sb.append("Str/");
+		sb.append(p.getIntelligence());
+		sb.append("Int/");
+		sb.append(p.getDefense());
+		sb.append("Def");
+		Console.print(sb.getString());
 	}
 }

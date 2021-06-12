@@ -1,14 +1,17 @@
 package roguelike;
 
-class Resources {
+public class Resources {
 	static final int MAX_PLAYFIELD_HEIGHT = 20;
 	static final int MAX_PLAYFIELD_WIDTH = 80;
 	
+	public static final int MAX_ENEMY_COUNT_PER_FLOOR = 10;
+	
 	//default player stats
-	static final int defaultHealth = 20;
-	static final int defaultStr = 10;
-	static final int defaultDef = 10;
-	static final int defaultInt = 10;
+	public static final int defaultPlayerHealth = 20;
+	public static final int defaultStr = 10;
+	public static final int defaultDef = 10;
+	public static final int defaultInt = 10;
+	static final int defaultPlayerItemCapacity = 20;
 	
 	//directions
 	static final int DIR_UP = 1;
@@ -18,29 +21,6 @@ class Resources {
 	
 	//basic floor for testing
 	static String returnBasicFloor() {
-		/*
-		String retval = "";
-		retval = retval.concat("                                                                                ");
-		retval = retval.concat("################################################################################");
-		retval = retval.concat("#                                                                              #");
-		retval = retval.concat("#                                                                              #");
-		retval = retval.concat("#                                                                              #");
-		retval = retval.concat("#                                                                              #");
-		retval = retval.concat("#                                                                              #");
-		retval = retval.concat("#                                                                              #");
-		retval = retval.concat("#                                                                              #");
-		retval = retval.concat("#                                                                              #");
-		retval = retval.concat("#                                                                              #");
-		retval = retval.concat("#                                                                              #");
-		retval = retval.concat("#                                                                              #");
-		retval = retval.concat("#                                                                              #");
-		retval = retval.concat("#                                                                              #");
-		retval = retval.concat("#                                                                              #");
-		retval = retval.concat("#                                                                              #");
-		retval = retval.concat("#                                                                              #");
-		retval = retval.concat("################################################################################");
-		retval = retval.concat("                                                                                ");
-		return retval;*/
 		char[] val = new char[1600];
 		int index = 0;
 		for (;index<80;index++) {

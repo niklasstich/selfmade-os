@@ -2,6 +2,11 @@ package roguelike;
 
 import graphics.Console;
 import graphics.ConsoleColors;
+import roguelike.entities.Enemy;
+import roguelike.entities.EnemyCollection;
+import roguelike.entities.Entity;
+import roguelike.entities.Player;
+import roguelike.tiles.Tile;
 
 public class Renderer {
 	private Floor floor;
@@ -21,15 +26,24 @@ public class Renderer {
 		}
 	}
 	
-	void renderPlayer() {
-		//overwrite player old position with proper symbol
-		Coordinate lastCoord = player.getLastCoord();
+	void renderEntity(Entity e) {
+		Coordinate lastCoord = e.getLastCoord();
 		if(lastCoord!=null) {
 			Tile t = floor.getFloorTiles()[lastCoord.getPosy()][lastCoord.getPosx()];
+			//TODO: possible bug? what if e1 moves away from tile, e2 moves on it, and e2 is rendered before e1?
 			Console.directPrintChar(t.getSymbol(), lastCoord.getPosx(), lastCoord.getPosy(), ConsoleColors.DEFAULT_CONSOLE_COLOR);
 		}
-		//write new player pos
-		Coordinate currentCoord = player.getCoord();
-		Console.directPrintChar(Player.getSymbol(), currentCoord.getPosx(), currentCoord.getPosy(), ConsoleColors.DEFAULT_CONSOLE_COLOR);
+		Coordinate currentCoord = e.getCoord();
+		Console.directPrintChar(e.getSymbol(), currentCoord.getPosx(), currentCoord.getPosy(), ConsoleColors.DEFAULT_CONSOLE_COLOR);
+	}
+	
+	void renderPlayer() {
+		renderEntity(player);
+	}
+	
+	public void renderEnemies(EnemyCollection enemies) {
+		for (Enemy e : enemies.getEnemies()) {
+			renderEntity(e);
+		}
 	}
 }

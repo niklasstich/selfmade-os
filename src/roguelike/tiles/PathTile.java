@@ -1,14 +1,14 @@
-package roguelike;
+package roguelike.tiles;
 
 public class PathTile extends Tile {
 	static final char sym = 176;
 	@Override
-	char getSymbol() {
+	public char getSymbol() {
 		return PathTile.sym;
 	}
 	
 	@Override
-	boolean isPassable() {
+	public boolean isPassable() {
 		return true;
 	}
 }
