@@ -9,16 +9,12 @@ public abstract class Entity {
 	//player stats
 	protected int health;
 	protected int maxHealth;
-	protected int strength;
-	protected int defense;
-	protected int intelligence;
 	protected Coordinate lastCoord;
 	
-	public Entity(Coordinate coord) {
+	public Entity(Coordinate coord, int health, int maxHealth) {
 		this.coord = coord;
-		strength = Resources.defaultStr;
-		defense = Resources.defaultDef;
-		intelligence = Resources.defaultInt;
+		this.health = health;
+		this.maxHealth = maxHealth;
 	}
 	
 	public int getHealth() {
@@ -27,18 +23,6 @@ public abstract class Entity {
 	
 	public int getMaxHealth() {
 		return maxHealth;
-	}
-	
-	public int getStrength() {
-		return strength;
-	}
-	
-	public int getDefense() {
-		return defense;
-	}
-	
-	public int getIntelligence() {
-		return intelligence;
 	}
 	
 	public Coordinate getCoord() {

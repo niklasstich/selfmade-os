@@ -13,6 +13,13 @@ public class Resources {
 	public static final int defaultInt = 10;
 	static final int defaultPlayerItemCapacity = 20;
 	
+	//zombie
+	public static final int ZOMBIE_HEALTH = 5;
+	public static final int ZOMBIE_MINDMG = 1;
+	public static final int ZOMBIE_MAXDMG = 3;
+	public static final float ZOMBIE_HITCHANCE = 0.25f;
+	public static final float ZOMBIE_DODGECHANCE = 0.25f;
+	
 	//directions
 	static final int DIR_UP = 1;
 	static final int DIR_RIGHT = 2;
