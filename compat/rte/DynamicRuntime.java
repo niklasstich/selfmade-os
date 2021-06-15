@@ -408,8 +408,6 @@ public class DynamicRuntime {
 						obj = prevObject;
 					}
 				} else {//eObj fits in hole
-					Serial.print(" deleting:");
-					Serial.print(obj._r_type.name);
 					int objBaseAddr = MAGIC.cast2Ref(obj);
 					objBaseAddr -= obj._r_relocEntries*MAGIC.ptrSize;
 					int eObjAddr = objBaseAddr+MAGIC.getInstRelocEntries("SEmptyObject")*MAGIC.ptrSize;
@@ -438,11 +436,6 @@ public class DynamicRuntime {
 						firstEObj = (SEmptyObject) eObj;
 					}
 					lastSeenEmptyObject = (SEmptyObject) eObj;
-					Serial.print('*');
-					Serial.print(eObj._r_scalarSize);
-					Serial.print(',');
-					Serial.print(freeMem);
-					Serial.print('\n');
 				}
 			} else {
 				MAGIC.assign(obj._r_used, 0);
