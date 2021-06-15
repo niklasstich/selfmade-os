@@ -1,11 +1,16 @@
 package roguelike;
 
 import graphics.Console;
+import hardware.Random;
 import hardware.Serial;
 import hardware.keyboard.KeyboardEvent;
 import roguelike.entities.Enemy;
 import roguelike.entities.Player;
 import roguelike.entities.Zombie;
+import roguelike.tiles.FloorTile;
+import roguelike.tiles.Tile;
+import rte.DynamicRuntime;
+import rte.SClassDesc;
 import sysutils.Scheduler;
 import sysutils.exec.Executable;
 import sysutils.exec.ExecutableFactory;
@@ -64,6 +69,9 @@ public class RogueExec extends Executable {
 		if(player==null) {
 			Coordinate spawn = currFloor.getValidSpawn();
 			player = new Player(spawn);
+			
+			//TODO: REMOVE THIS DEBUG
+			//player.setGodMode(true);
 		}
 		//initialize renderer
 		if(renderer==null) {
@@ -98,6 +106,9 @@ public class RogueExec extends Executable {
 				case Key.d: MessageStatPrinter.printMessage("This is a test!");
 				case Key.Z: spawnZombie();
 			}
+			if(player.isDead()) {
+				return 0;
+			}
 			renderer.renderPlayer();
 			renderer.renderEnemies(currFloor.getEnemies());
 		}
@@ -124,11 +135,22 @@ public class RogueExec extends Executable {
 		//check if enemy on tile
 		Enemy enemy = currFloor.getEnemyAtCoordinate(newCoord);
 		if(enemy!=null) {
+			rerenderStats = true;
 			//TODO: handle fight
-			Serial.print("FIGHT!\n");
+			int fightOutcome = Combat.doMeleeCombat(player, enemy);
+			if(fightOutcome == Combat.PLAYER_DIED) {
+				player.setDead();
+				deathScreen();
+				return;
+			}
+			if(fightOutcome == Combat.ENEMY_DIED) {
+				//remove the enemy from the enemy list, and rerender tile it was on
+				currFloor.killEnemy(enemy);
+				Tile t = currFloor.getTileAtCoordinate(newCoord);
+				renderer.renderTile(t, newCoord);
+			}
 			return;
 		} else {
-			Serial.print("no fight :(\n");
 		}
 		player.move(newCoord);
 	}
@@ -138,5 +160,21 @@ public class RogueExec extends Executable {
 		Zombie z = new Zombie(currFloor.getValidEnemySpawn(player.getCoord()));
 		//insert it into the floor
 		if(currFloor.insertEnemy(z)) Serial.print("success adding zombie!\n");
+	}
+	
+	private void debugItems() {
+		//find random tile, plant a claymore there
+		Tile t = currFloor.getFloorTiles()[Random.rand(0, Resources.MAX_PLAYFIELD_HEIGHT-1)][Random.rand(0, Resources.MAX_PLAYFIELD_WIDTH-1)];
+		if(DynamicRuntime.isInstance(t, (SClassDesc) MAGIC.clssDesc("FloorTile"), false)) {
+			FloorTile ft = (FloorTile) t;
+			
+		}
+	}
+	
+	private void deathScreen() {
+		//TODO: make this nice like the original rogue death screen
+		Console.clearConsole();
+		Console.print("YOU DIED. RIP.\n");
+		Scheduler.markTaskAsFinished(this);
 	}
 }

@@ -46,4 +46,8 @@ public class Renderer {
 			renderEntity(e);
 		}
 	}
+	
+	public void renderTile(Tile t, Coordinate coord) {
+		Console.directPrintChar(t.getSymbol(), coord.getPosx(), coord.getPosy(), ConsoleColors.DEFAULT_CONSOLE_COLOR);
+	}
 }

@@ -14,11 +14,19 @@ public class Resources {
 	static final int defaultPlayerItemCapacity = 20;
 	
 	//zombie
-	public static final int ZOMBIE_HEALTH = 5;
-	public static final int ZOMBIE_MINDMG = 1;
-	public static final int ZOMBIE_MAXDMG = 3;
-	public static final float ZOMBIE_HITCHANCE = 0.25f;
-	public static final float ZOMBIE_DODGECHANCE = 0.25f;
+	public static final int ZOMBIE_HEALTH = 10;
+	public static final int ZOMBIE_MINDMG = 2;
+	public static final int ZOMBIE_MAXDMG = 4;
+	public static final int ZOMBIE_HITCHANCE = 50;
+	public static final int ZOMBIE_DODGECHANCE = 30;
+	
+	//claymore
+	public static final int CLAYMORE_HITCHANCE = 65;
+	public static final int CLAYMORE_BLOCKCHANCE = 0;
+	public static final int CLAYMORE_PARRYCHANCE = 15;
+	public static final int CLAYMORE_MINDMG = 3;
+	public static final int CLAYMORE_MAXDMG = 5;
+	public static final String CLAYMORE_NAME = "Iron Claymore";
 	
 	//directions
 	static final int DIR_UP = 1;

@@ -29,7 +29,7 @@ public abstract class Entity {
 		return coord;
 	}
 	
-	public void setPos(Coordinate coord) {
+	public void setCoord(Coordinate coord) {
 		lastCoord = this.coord;
 		this.coord = coord;
 	}
@@ -45,4 +45,8 @@ public abstract class Entity {
 	}
 	
 	public abstract char getSymbol();
+	
+	public void setHealth(int health) {
+		this.health = health;
+	}
 }

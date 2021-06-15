@@ -92,6 +92,14 @@ class Floor {
 		return enemies;
 	}
 	
+	public void killEnemy(Enemy e) {
+		enemies.delete(e);
+	}
+	
+	public Tile getTileAtCoordinate(Coordinate coord) {
+		return floorTiles[coord.getPosy()][coord.getPosx()];
+	}
+	
 	//container class for coordinates
 	private static class CoordinateList {
 		Coordinate[] coords = new Coordinate[Resources.MAX_PLAYFIELD_WIDTH*Resources.MAX_PLAYFIELD_HEIGHT];
