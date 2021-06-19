@@ -11,7 +11,7 @@ public class Combat {
 	public static final int PLAYER_DIED = -1;
 	public static final int NOBODY_DIED = 0;
 	//returns 1 if enemy died, -1 if player died, 0 if neither died
-	static int doMeleeCombat(Player p, Enemy e) {
+	static int doMeleeCombat(Player p, Enemy e, MessageStatPrinter messages) {
 		//player always hits first, so roll if player will hit
 		//get player weapon
 		Weapon w = p.getEquippedWeapon();
@@ -23,14 +23,16 @@ public class Combat {
 			int eEvade = Random.rand(1, 100);
 			if(eEvade >= e.getDodgeChance()) {
 				//player hit, enemy doesn't dodge, handle damage
-				handlePlayerMeleeHit(p, e, w, pCriticalHit);
+				handlePlayerMeleeHit(p, e, w, pCriticalHit, messages);
 				//check if enemy is dead, otherwise continue with enemy attack
 				if(e.getHealth()<=0) return ENEMY_DIED;
 			} else {
-				Serial.print("Enemy dodged player\n");
+				Serial.print("Enemy dodged player");
+				messages.queueMessage("Enemy dodged player");
 			}
 		} else {
-			Serial.print("Player misses enemy\n");
+			Serial.print("Player misses enemy");
+			messages.queueMessage("Player misses enemy");
 		}
 		
 		//enemy rolls for hit
@@ -40,23 +42,24 @@ public class Combat {
 			//enemy hits, roll if player parries (no player damage, reflect half damage)
 			int pParry = Random.rand(1, 100);
 			if(pParry < w.getParryChance()) {
-				handlePlayerParry(p, e, w);
+				handlePlayerParry(e, messages);
 				//check if enemy dead, otherwise end combat
 				if(e.getHealth()<=0) return ENEMY_DIED;
 				return NOBODY_DIED;
 			}
 			//player didn't parry, roll if player blocks (player takes half damage)
 			int pBlock = Random.rand(1, 100);
-			handleEnemyHit(p, e, pBlock < w.getBlockChance());
+			handleEnemyHit(p, e, pBlock < w.getBlockChance(), messages);
 			if(p.getHealth()<=0) return PLAYER_DIED;
 		} else {
-			Serial.print("Enemy misses player\n");
+			Serial.print("Enemy misses player");
+			messages.queueMessage("Enemy misses player");
 		}
 		return NOBODY_DIED;
 	}
 	
 	//player hits enemy
-	static void handlePlayerMeleeHit(Player p, Enemy e, Weapon w, boolean critical) {
+	static void handlePlayerMeleeHit(Player p, Enemy e, Weapon w, boolean critical, MessageStatPrinter messages) {
 		//roll damage
 		int damage = Random.rand(w.getMinDamage(), w.getMaxDamage());
 		//add player attack power
@@ -67,24 +70,24 @@ public class Combat {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Player hits enemy for ");
 		sb.append(damage);
-		sb.append('\n');
 		Serial.print(sb.getString());
+		messages.queueMessage(sb.getString());
 	}
 	
 	//player parries enemy hit
-	static void handlePlayerParry(Player p, Enemy e, Weapon w) {
+	static void handlePlayerParry(Enemy e, MessageStatPrinter messages) {
 		//roll enemy damage
 		int damage = Random.rand(e.getMinDamage(), e.getMaxDamage())/2;
 		e.setHealth(e.getHealth()-damage);
 		StringBuilder sb = new StringBuilder();
 		sb.append("Player parries enemy for ");
 		sb.append(damage);
-		sb.append('\n');
 		Serial.print(sb.getString());
+		messages.queueMessage(sb.getString());
 	}
 	
 	//enemy hits player
-	static void handleEnemyHit(Player p, Enemy e, boolean blocked) {
+	static void handleEnemyHit(Player p, Enemy e, boolean blocked, MessageStatPrinter messages) {
 		//roll enemy damage
 		int damage = Random.rand(e.getMinDamage(), e.getMaxDamage());
 		//subtract player block power
@@ -96,7 +99,7 @@ public class Combat {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Enemy hits player for ");
 		sb.append(damage);
-		sb.append('\n');
 		Serial.print(sb.getString());
+		messages.queueMessage(sb.getString());
 	}
 }

@@ -6,20 +6,116 @@ import roguelike.entities.Player;
 class MessageStatPrinter {
 	static final int MESSAGEBAR_LINE = 21;
 	static final int CHARACTER_STATS_LINE = 23;
+	final MessageRingBuffer msgBuf;
+	boolean msgPrinted;
 	
-	static void printMessage(String msg) {
-		Console.setCursor(0, MESSAGEBAR_LINE);
-		Console.print(msg);
+	MessageStatPrinter() {
+		msgBuf = new MessageRingBuffer();
 	}
 	
-	static void clearMessage() {
+	//ring buffer
+	static private class MessageRingBuffer {
+		private static final int DEFAULT_SIZE = 16;
+		private final String[] buffer;
+		private final int size;
+		private int writePointer = 0;
+		private int readPointer = 0;
+		public MessageRingBuffer() {
+			buffer = new String[DEFAULT_SIZE];
+			size = DEFAULT_SIZE;
+		}
+		
+		public MessageRingBuffer(int size) {
+			buffer = new String[size];
+			this.size = size;
+		}
+		
+		private void increaseWritePointer() {
+			if (writePointer == size-1) {
+				writePointer = 0;
+				return;
+			}
+			writePointer++;
+		}
+		
+		private void increaseReadPointer() {
+			if(readPointer == writePointer)return;
+			if(readPointer == size-1) {
+				readPointer=0;
+				return;
+			}
+			readPointer++;
+		}
+		
+		//returns whether or not there is new data to be read
+		//if canRead() returns false, then readMessage() and peekMessage() will read old data
+		public boolean canRead() {
+			return readPointer != writePointer;
+		}
+		
+		//returns whether or not buffer is full
+		public boolean full() {
+			return (writePointer == readPointer-1);
+		}
+		
+		//returns the next byte in the buffer without advancing the read pointer
+		//if canRead() returns false, then this will return old data
+		public String peekMessage() {
+			return buffer[readPointer];
+		}
+		
+		//returns the next message in the buffer
+		//if canRead() returns false, then this will return old data
+		public String readMessage() {
+			String s = peekMessage();
+			increaseReadPointer();
+			return s;
+		}
+		
+		//writes the message s into the buffer
+		public void writeMessage(String s) {
+			buffer[writePointer] = s;
+			increaseWritePointer();
+		}
+		
+		//clears the buffer
+		public void clearBuffer() {
+			readPointer = writePointer = 0;
+		}
+		
+	}
+	
+	
+	//true if there are messages in queue, false otherwise
+	boolean hasMessages() {
+		return msgBuf.canRead();
+	}
+	
+	//returns true if message was queued, false if buffer is full
+	boolean queueMessage(String msg) {
+		if(msgBuf.full()) return false;
+		msgBuf.writeMessage(msg);
+		return true;
+	}
+	
+	void printNextMessage() {
+		if(msgPrinted) clearMessage();
+		String s = msgBuf.readMessage();
+		Console.setCursor(0, MESSAGEBAR_LINE);
+		Console.print(s);
+		if(hasMessages()) Console.print(" [...]");
+		msgPrinted = true;
+	}
+	
+	void clearMessage() {
 		Console.setCursor(0, MESSAGEBAR_LINE);
 		for (int i = 0; i < 80; i++) {
 			Console.print(' ');
 		}
+		msgPrinted = false;
 	}
 	
-	public static void printStats(Player p) {
+	public void printStats(Player p) {
 		Console.setCursor(0, CHARACTER_STATS_LINE);
 		//craft string first for performance reasons
 		StringBuilder sb = new StringBuilder("  Health: ");

@@ -35,12 +35,16 @@ public class RogueExec extends Executable {
 	}
 	RogueExec() {
 		acceptsKeyboardInputs = true;
+		messages = new MessageStatPrinter();
 	}
 	public boolean firstRun = true;
 	//game state
 	private Floor currFloor;
 	private Player player;
+	
+	//game dependencies
 	private Renderer renderer;
+	private MessageStatPrinter messages;
 	
 	//confirm quit
 	private boolean confirmQuit = false;
@@ -94,17 +98,25 @@ public class RogueExec extends Executable {
 					return 0;
 				} else {
 					confirmQuit = false;
-					MessageStatPrinter.clearMessage();
+					messages.clearMessage();
 				}
 			}
-			switch (kev.KEYCODE) {
-				case Key.h: movement(Resources.DIR_LEFT); break;
-				case Key.j: movement(Resources.DIR_DOWN); break;
-				case Key.k: movement(Resources.DIR_UP); break;
-				case Key.l: movement(Resources.DIR_RIGHT); break;
-				case Key.Q: confirmQuit = true; MessageStatPrinter.printMessage("Press Q/q again to quit."); break;
-				case Key.d: MessageStatPrinter.printMessage("This is a test!");
-				case Key.Z: spawnZombie();
+			if(messages.hasMessages()) {
+				messages.printNextMessage();
+			} else {
+				messages.clearMessage();
+				switch (kev.KEYCODE) {
+					case Key.h: movement(Resources.DIR_LEFT); break;
+					case Key.j: movement(Resources.DIR_DOWN); break;
+					case Key.k: movement(Resources.DIR_UP); break;
+					case Key.l: movement(Resources.DIR_RIGHT); break;
+					case Key.Q: confirmQuit = true; messages.queueMessage("Press Q/q again to quit."); break;
+					case Key.d: messages.queueMessage("This is a test!");
+					case Key.Z: spawnZombie();
+				}
+			}
+			if(messages.hasMessages()) {
+				messages.printNextMessage();
 			}
 			if(player.isDead()) {
 				return 0;
@@ -113,7 +125,7 @@ public class RogueExec extends Executable {
 			renderer.renderEnemies(currFloor.getEnemies());
 		}
 		if(rerenderStats) {
-			MessageStatPrinter.printStats(player);
+			messages.printStats(player);
 			rerenderStats = false;
 		}
 		return 0;
@@ -137,7 +149,7 @@ public class RogueExec extends Executable {
 		if(enemy!=null) {
 			rerenderStats = true;
 			//TODO: handle fight
-			int fightOutcome = Combat.doMeleeCombat(player, enemy);
+			int fightOutcome = Combat.doMeleeCombat(player, enemy, messages);
 			if(fightOutcome == Combat.PLAYER_DIED) {
 				player.setDead();
 				deathScreen();
@@ -148,6 +160,7 @@ public class RogueExec extends Executable {
 				currFloor.killEnemy(enemy);
 				Tile t = currFloor.getTileAtCoordinate(newCoord);
 				renderer.renderTile(t, newCoord);
+				messages.queueMessage("Enemy died!");
 			}
 			return;
 		} else {

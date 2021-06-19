@@ -15,13 +15,13 @@ public class Resources {
 	
 	//zombie
 	public static final int ZOMBIE_HEALTH = 10;
-	public static final int ZOMBIE_MINDMG = 2;
-	public static final int ZOMBIE_MAXDMG = 4;
-	public static final int ZOMBIE_HITCHANCE = 50;
+	public static final int ZOMBIE_MINDMG = 4;
+	public static final int ZOMBIE_MAXDMG = 5;
+	public static final int ZOMBIE_HITCHANCE = 65;
 	public static final int ZOMBIE_DODGECHANCE = 30;
 	
 	//claymore
-	public static final int CLAYMORE_HITCHANCE = 65;
+	public static final int CLAYMORE_HITCHANCE = 75;
 	public static final int CLAYMORE_BLOCKCHANCE = 0;
 	public static final int CLAYMORE_PARRYCHANCE = 15;
 	public static final int CLAYMORE_MINDMG = 3;
