@@ -32,10 +32,10 @@ public class Time {
 	public static long readRTC() {
 		MAGIC.wIOs8(0x70, (byte)4);
 		int hour=(int)MAGIC.rIOs8(0x71);
-        MAGIC.wIOs8(0x70, (byte)2);
-        int minute=(int)MAGIC.rIOs8(0x71);
-        MAGIC.wIOs8(0x70, (byte)0);
-        int second=(int)MAGIC.rIOs8(0x71);
-        return (long)((hour*60+minute)*60+second);
+		MAGIC.wIOs8(0x70, (byte)2);
+		int minute=(int)MAGIC.rIOs8(0x71);
+		MAGIC.wIOs8(0x70, (byte)0);
+		int second=(int)MAGIC.rIOs8(0x71);
+		return (long)((hour*60+minute)*60+second);
 	}
 }
