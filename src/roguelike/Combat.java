@@ -27,12 +27,16 @@ public class Combat {
 				//check if enemy is dead, otherwise continue with enemy attack
 				if(e.getHealth()<=0) return ENEMY_DIED;
 			} else {
-				Serial.print("Enemy dodged player");
-				messages.queueMessage("Enemy dodged player");
+				StringBuilder sb = new StringBuilder();
+				sb.append(e.getName());
+				sb.append(" dodged your attack.");
+				messages.queueMessage(sb.getString());
 			}
 		} else {
-			Serial.print("Player misses enemy");
-			messages.queueMessage("Player misses enemy");
+			StringBuilder sb = new StringBuilder();
+			sb.append("You miss ");
+			sb.append(e.getName());
+			messages.queueMessage(sb.getString());
 		}
 		
 		//enemy rolls for hit
@@ -52,8 +56,10 @@ public class Combat {
 			handleEnemyHit(p, e, pBlock < w.getBlockChance(), messages);
 			if(p.getHealth()<=0) return PLAYER_DIED;
 		} else {
-			Serial.print("Enemy misses player");
-			messages.queueMessage("Enemy misses player");
+			StringBuilder sb = new StringBuilder();
+			sb.append(e.getName());
+			sb.append(" misses you.");
+			messages.queueMessage(sb.getString());
 		}
 		return NOBODY_DIED;
 	}
@@ -68,9 +74,11 @@ public class Combat {
 		//update enemy health
 		e.setHealth(e.getHealth()-damage);
 		StringBuilder sb = new StringBuilder();
-		sb.append("Player hits enemy for ");
+		sb.append("You hit ");
+		sb.append(e.getName());
+		sb.append(" for ");
 		sb.append(damage);
-		Serial.print(sb.getString());
+		sb.append(" damage.");
 		messages.queueMessage(sb.getString());
 	}
 	
@@ -80,9 +88,11 @@ public class Combat {
 		int damage = Random.rand(e.getMinDamage(), e.getMaxDamage())/2;
 		e.setHealth(e.getHealth()-damage);
 		StringBuilder sb = new StringBuilder();
-		sb.append("Player parries enemy for ");
+		sb.append("You parry ");
+		sb.append(e.getName());
+		sb.append(" for ");
 		sb.append(damage);
-		Serial.print(sb.getString());
+		sb.append(" damage.");
 		messages.queueMessage(sb.getString());
 	}
 	
@@ -97,9 +107,10 @@ public class Combat {
 		if(damage < 0) damage = 0;
 		p.setHealth(p.getHealth()-damage);
 		StringBuilder sb = new StringBuilder();
-		sb.append("Enemy hits player for ");
+		sb.append(e.getName());
+		sb.append(" hits you for ");
 		sb.append(damage);
-		Serial.print(sb.getString());
+		sb.append(" damage.");
 		messages.queueMessage(sb.getString());
 	}
 }

@@ -1,5 +1,6 @@
 package roguelike.entities;
 
+import hardware.Serial;
 import roguelike.Coordinate;
 import roguelike.Resources;
 import roguelike.items.Claymore;
@@ -9,7 +10,7 @@ import roguelike.items.Weapon;
 public class Player extends Entity {
 	protected ItemCollection items;
 	protected Weapon weapon;
-	protected boolean dead;
+	protected boolean dead, won;
 	protected boolean godMode;
 	protected int strength;
 	protected int defense;
@@ -54,12 +55,22 @@ public class Player extends Entity {
 		dead = true;
 	}
 	
+	public boolean hasWon() {
+		return won;
+	}
+	
+	public void setWon() {
+		won = true;
+	}
+	
 	public boolean isGodMode() {
 		return godMode;
 	}
 	
-	public void setGodMode(boolean godMode) {
-		this.godMode = godMode;
+	public void toggleGodmode() {
+		this.godMode = !this.godMode;
+		Serial.print("God mode set to: ");
+		Serial.println(godMode);
 	}
 	
 	@Override

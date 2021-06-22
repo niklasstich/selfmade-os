@@ -19,6 +19,15 @@ public class Resources {
 	public static final int ZOMBIE_MAXDMG = 5;
 	public static final int ZOMBIE_HITCHANCE = 65;
 	public static final int ZOMBIE_DODGECHANCE = 30;
+	public static final String ZOMBIE_ENEMYNAME = "Zombie";
+	
+	//final endboss
+	public static final int ENDBOSS_HEALTH = 150;
+	public static final int ENDBOSS_MINDMG = 10;
+	public static final int ENDBOSS_MAXDMG = 20;
+	public static final int ENDBOSS_HITCHANCE = 95;
+	public static final int ENDBOSS_DODGECHANCE = 40;
+	public static final String ENDBOSS_ENEMYNAME = "Mephistopheles Of The Hell";
 	
 	//claymore
 	public static final int CLAYMORE_HITCHANCE = 75;

@@ -2,11 +2,14 @@ package roguelike;
 
 import graphics.Console;
 import graphics.ConsoleColors;
+import hardware.Serial;
 import roguelike.entities.Enemy;
 import roguelike.entities.EnemyCollection;
 import roguelike.entities.Entity;
 import roguelike.entities.Player;
 import roguelike.tiles.Tile;
+import rte.DynamicRuntime;
+import rte.SClassDesc;
 
 public class Renderer {
 	private Floor floor;
@@ -27,6 +30,15 @@ public class Renderer {
 	}
 	
 	void renderEntity(Entity e) {
+		int consColor = ConsoleColors.DEFAULT_CONSOLE_COLOR;
+		if(DynamicRuntime.isInstance(e, (SClassDesc) MAGIC.clssDesc("Enemy"), false)) {
+			consColor = ConsoleColors.BG_BLACK | ConsoleColors.FG_RED;
+		} else if(DynamicRuntime.isInstance(e, (SClassDesc) MAGIC.clssDesc("Player"), false)) {
+			consColor = ConsoleColors.BG_BLACK | ConsoleColors.FG_GREEN;
+		} else {
+			Serial.print("Cannot determine type of Entity in renderEntity");
+			MAGIC.inline(0xCC);
+		}
 		Coordinate lastCoord = e.getLastCoord();
 		if(lastCoord!=null) {
 			Tile t = floor.getFloorTiles()[lastCoord.getPosy()][lastCoord.getPosx()];
@@ -34,7 +46,7 @@ public class Renderer {
 			Console.directPrintChar(t.getSymbol(), lastCoord.getPosx(), lastCoord.getPosy(), ConsoleColors.DEFAULT_CONSOLE_COLOR);
 		}
 		Coordinate currentCoord = e.getCoord();
-		Console.directPrintChar(e.getSymbol(), currentCoord.getPosx(), currentCoord.getPosy(), ConsoleColors.DEFAULT_CONSOLE_COLOR);
+		Console.directPrintChar(e.getSymbol(), currentCoord.getPosx(), currentCoord.getPosy(), consColor);
 	}
 	
 	void renderPlayer() {

@@ -5,6 +5,7 @@ import hardware.Random;
 import hardware.Serial;
 import hardware.keyboard.KeyboardEvent;
 import roguelike.entities.Enemy;
+import roguelike.entities.FinalBoss;
 import roguelike.entities.Player;
 import roguelike.entities.Zombie;
 import roguelike.tiles.FloorTile;
@@ -101,6 +102,7 @@ public class RogueExec extends Executable {
 					messages.clearMessage();
 				}
 			}
+			//if we have messages to display, ignore the pressed key entirely
 			if(messages.hasMessages()) {
 				messages.printNextMessage();
 			} else {
@@ -111,14 +113,19 @@ public class RogueExec extends Executable {
 					case Key.k: movement(Resources.DIR_UP); break;
 					case Key.l: movement(Resources.DIR_RIGHT); break;
 					case Key.Q: confirmQuit = true; messages.queueMessage("Press Q/q again to quit."); break;
-					case Key.d: messages.queueMessage("This is a test!");
-					case Key.Z: spawnZombie();
+					case Key.d: player.toggleGodmode(); break;
+					case Key.Z: spawnEndboss(); break;
+				}
+				//check this again to make sure we print everything
+				if(messages.hasMessages()) {
+					messages.printNextMessage();
 				}
 			}
-			if(messages.hasMessages()) {
-				messages.printNextMessage();
-			}
 			if(player.isDead()) {
+				return 0;
+			}
+			if(player.hasWon()) {
+				winScreen();
 				return 0;
 			}
 			renderer.renderPlayer();
@@ -160,7 +167,12 @@ public class RogueExec extends Executable {
 				currFloor.killEnemy(enemy);
 				Tile t = currFloor.getTileAtCoordinate(newCoord);
 				renderer.renderTile(t, newCoord);
-				messages.queueMessage("Enemy died!");
+				StringBuilder sb = new StringBuilder();
+				sb.append(enemy.getName());
+				sb.append(" died!");
+				messages.queueMessage(sb.getString());
+				//call onDeath event for enemy for additional effects
+				enemy.onDeath(player, currFloor.getTileAtCoordinate(newCoord));
 			}
 			return;
 		} else {
@@ -172,7 +184,12 @@ public class RogueExec extends Executable {
 		//generate new zombie
 		Zombie z = new Zombie(currFloor.getValidEnemySpawn(player.getCoord()));
 		//insert it into the floor
-		if(currFloor.insertEnemy(z)) Serial.print("success adding zombie!\n");
+		if(currFloor.insertEnemy(z)) Serial.print("success spawning zombie!\n");
+	}
+	
+	private void spawnEndboss() {
+		Enemy e = new FinalBoss(currFloor.getValidEnemySpawn(player.getCoord()));
+		if(currFloor.insertEnemy(e)) Serial.print("success spawning final boss\n ");
 	}
 	
 	private void debugItems() {
@@ -188,6 +205,16 @@ public class RogueExec extends Executable {
 		//TODO: make this nice like the original rogue death screen
 		Console.clearConsole();
 		Console.print("YOU DIED. RIP.\n");
+		Scheduler.markTaskAsFinished(this);
+	}
+	
+	private void winScreen() {
+		Console.clearConsole();
+		StringBuilder sb = new StringBuilder();
+		sb.append("You have managed to best ");
+		sb.append(Resources.ENDBOSS_ENEMYNAME);
+		sb.append(". The world is saved, you are a hero, yada yada.\n");
+		Console.print(sb.getString());
 		Scheduler.markTaskAsFinished(this);
 	}
 }
