@@ -24,7 +24,7 @@ public class ErrorScreen {
 	}
 	
 	@SJC.Inline
-	private static void printStackframe(int ebp) {
+	public static void printStackframe(int ebp) {
 		//load previous ebp and eip
 		int eip = MAGIC.rMem32(ebp+EIP_OFFSET);
 		//ebp = MAGIC.rMem32(ebp);

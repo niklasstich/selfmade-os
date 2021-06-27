@@ -157,7 +157,11 @@ public class Interrupts {
 	@SJC.Interrupt
 	private static void pageFaultHandler(int errorCode) {
 		int CR2 = VirtualMemory.getCR2();
+		int ebp = 0;
+		MAGIC.inline(0x89,0x6D);
+		MAGIC.inlineOffset(1,ebp);
 		ErrorScreen.showPageFaultError(errorCode, CR2);
+		ErrorScreen.printStackframe(ebp);
 		while (true);
 	}
 	//endregion
