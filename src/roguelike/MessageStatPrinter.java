@@ -2,8 +2,14 @@ package roguelike;
 
 import graphics.Console;
 import roguelike.entities.Player;
+import roguelike.items.Consumable;
+import roguelike.items.Equipable;
+import roguelike.items.Item;
+import roguelike.items.ItemCollection;
+import rte.DynamicRuntime;
+import rte.SClassDesc;
 
-class MessageStatPrinter {
+public class MessageStatPrinter {
 	static final int MESSAGEBAR_LINE = 21;
 	static final int CHARACTER_STATS_LINE = 23;
 	final MessageRingBuffer msgBuf;
@@ -92,7 +98,7 @@ class MessageStatPrinter {
 	}
 	
 	//returns true if message was queued, false if buffer is full
-	boolean queueMessage(String msg) {
+	public boolean queueMessage(String msg) {
 		if(msgBuf.full()) return false;
 		msgBuf.writeMessage(msg);
 		return true;
@@ -131,4 +137,53 @@ class MessageStatPrinter {
 		sb.append("Def");
 		Console.print(sb.getString());
 	}
+	
+	public Consumable[] printConsumables(ItemCollection items) {
+		int index = 0;
+		Consumable[] consumables = new Consumable[50];
+		StringBuilder sb = new StringBuilder();
+		for (Item i : items.getItems()) {
+			if(DynamicRuntime.isInstance(i, (SClassDesc) MAGIC.clssDesc("Consumable"), false)) {
+				sb.append(index);
+				sb.append(": ");
+				sb.append(i.name);
+				sb.append(" ");
+				consumables[index] = (Consumable) i;
+				index++;
+			}
+		}
+		if(index>0) {
+			queueMessage(sb.getString());
+			return consumables;
+		}
+		else {
+			queueMessage("No items");
+			return null;
+		}
+	}
+	
+	public Equipable[] printEquipables(ItemCollection items) {
+		int index = 0;
+		Equipable[] consumables = new Equipable[50];
+		StringBuilder sb = new StringBuilder();
+		for (Item i : items.getItems()) {
+			if(DynamicRuntime.isInstance(i, (SClassDesc) MAGIC.clssDesc("Equipable"), false)) {
+				sb.append(index);
+				sb.append(": ");
+				sb.append(i.name);
+				sb.append(" ");
+				consumables[index] = (Equipable) i;
+				index++;
+			}
+		}
+		if(index>0) {
+			queueMessage(sb.getString());
+			return consumables;
+		}
+		else {
+			queueMessage("No items");
+			return null;
+		}
+	}
+	
 }

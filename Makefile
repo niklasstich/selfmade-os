@@ -8,7 +8,7 @@ toolchain_version = 0190
 
 compile:
 	mkdir -p $(outputdir)
-	cd $(compilerdir) && ./$(compiler_executable) ../$(sourcedir) ../$(compatdir)/rte ../$(compatdir)/java/lang -o boot -u rte -g -G -t ia32 -T nsop && mv BOOT_FLP.IMG syminfo.txt ../$(outputdir)
+	cd $(compilerdir) && ./$(compiler_executable) ../$(sourcedir) ../$(compatdir)/rte ../$(compatdir)/java/lang -o boot -u rte -g -G -t ia32 -T nsop -s 1M && mv BOOT_FLP.IMG syminfo.txt ../$(outputdir)
 
 run: compile
 	$(qemu_executable) -m 32 -boot a -serial stdio -fda out/BOOT_FLP.IMG

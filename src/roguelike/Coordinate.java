@@ -19,4 +19,12 @@ public class Coordinate {
 		if(this.getPosx()!=c.getPosx()) return false;
 		return this.getPosy() == c.getPosy();
 	}
+	
+	public int distanceTo(Coordinate coordinate) {
+		int xDis = this.posx - coordinate.posx;
+		int yDis = this.posy - coordinate.posy;
+		if(xDis<0) xDis*=-1;
+		if(yDis<0) yDis*=-1;
+		return xDis+yDis;
+	}
 }

@@ -1,7 +1,7 @@
 package roguelike.tiles;
 
+import hardware.Serial;
 import roguelike.items.Item;
-import roguelike.tiles.Tile;
 
 public class FloorTile extends Tile {
 	private Item item;
@@ -19,4 +19,21 @@ public class FloorTile extends Tile {
 		return true;
 	}
 	
+	@Override
+	public boolean putItem(Item item) {
+		if(this.item==null) {
+			this.item = item;
+			return true;
+		}
+		else
+			return false;
+	}
+	
+	public Item getItem() {
+		return this.item;
+	}
+	
+	public void removeItem() {
+		this.item = null;
+	}
 }

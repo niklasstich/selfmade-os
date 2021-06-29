@@ -7,6 +7,8 @@ import roguelike.entities.Enemy;
 import roguelike.entities.EnemyCollection;
 import roguelike.entities.Entity;
 import roguelike.entities.Player;
+import roguelike.items.ItemCollection;
+import roguelike.tiles.PathTile;
 import roguelike.tiles.Tile;
 import rte.DynamicRuntime;
 import rte.SClassDesc;
@@ -19,13 +21,25 @@ public class Renderer {
 		this.player = player;
 	}
 	void renderFloor() {
-		Tile[][] tiles = floor.getFloorTiles();
+		Room[] rooms = floor.getRooms().getRooms();
 		Console.clearConsole();
-		Console.setCursor(0,0);
-		for (int row = 0; row < Resources.MAX_PLAYFIELD_HEIGHT; row++) {
-			for (int column = 0; column < Resources.MAX_PLAYFIELD_WIDTH; column++) {
-				Console.print(tiles[row][column].getSymbol());
+		for (Room r : rooms) {
+			if(!r.isSeen())continue;
+			Tile[][] tiles = r.getRoomTiles();
+			Coordinate c = r.getTopLeft();
+			for (int y = 0; y < r.getHeight(); y++) {
+				//set cursor to correct position
+				Console.setCursor(r.getX(), r.getY()+y);
+				for (int x = 0; x < r.getWidth(); x++) {
+					Console.print(tiles[y][x].getSymbol());
+				}
 			}
+		}
+		
+		CoordinateList paths = floor.getPathTileCoords();
+		for (Coordinate c : paths.coords) {
+			if(c==null)break;
+			Console.directPrintChar(PathTile.sym, c.getPosx(), c.getPosy(), ConsoleColors.DEFAULT_CONSOLE_COLOR);
 		}
 	}
 	
@@ -41,9 +55,18 @@ public class Renderer {
 		}
 		Coordinate lastCoord = e.getLastCoord();
 		if(lastCoord!=null) {
-			Tile t = floor.getFloorTiles()[lastCoord.getPosy()][lastCoord.getPosx()];
 			//TODO: possible bug? what if e1 moves away from tile, e2 moves on it, and e2 is rendered before e1?
-			Console.directPrintChar(t.getSymbol(), lastCoord.getPosx(), lastCoord.getPosy(), ConsoleColors.DEFAULT_CONSOLE_COLOR);
+			Room[] rooms = floor.getRooms().getRooms();
+			for (Room r : rooms){
+				if(r.containsCoordinate(lastCoord)) {
+					Tile[][] roomTiles = r.getRoomTiles();
+					//translate coordinate to room coordinates
+					Tile t = roomTiles[lastCoord.getPosy()-r.getY()][lastCoord.getPosx()-r.getX()];
+					Console.directPrintChar(t.getSymbol(), lastCoord.getPosx(), lastCoord.getPosy(), ConsoleColors.DEFAULT_CONSOLE_COLOR);
+					//we found the room and printed, so we don't have to check the other rooms
+					break;
+				}
+			}
 		}
 		Coordinate currentCoord = e.getCoord();
 		Console.directPrintChar(e.getSymbol(), currentCoord.getPosx(), currentCoord.getPosy(), consColor);
@@ -61,5 +84,9 @@ public class Renderer {
 	
 	public void renderTile(Tile t, Coordinate coord) {
 		Console.directPrintChar(t.getSymbol(), coord.getPosx(), coord.getPosy(), ConsoleColors.DEFAULT_CONSOLE_COLOR);
+	}
+	
+	public void rerenderTile(Coordinate coordinate) {
+		renderTile(floor.getTileAtCoordinate(coordinate), coordinate);
 	}
 }

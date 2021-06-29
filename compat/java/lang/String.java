@@ -15,6 +15,7 @@ public class String {
 	public static String compactString(char[] value) {
 		int realLen = value.length - 1;
 		while (true) {
+			if(realLen==0) return "";
 			if (value[realLen] == 0) realLen--; //last char is null byte, so cut it off
 			else break;
 		}

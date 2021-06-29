@@ -1,5 +1,6 @@
 package roguelike.items;
 
+import roguelike.MessageStatPrinter;
 import roguelike.Resources;
 import roguelike.entities.Player;
 
@@ -10,12 +11,12 @@ public class Claymore extends Weapon {
 	}
 	
 	@Override
-	public void onEquip(Player p) {
+	public void onEquip(Player p, MessageStatPrinter msp) {
 	
 	}
 	
 	@Override
-	public void onUnequip(Player p) {
+	public void onUnequip(Player p, MessageStatPrinter msp) {
 	
 	}
 }

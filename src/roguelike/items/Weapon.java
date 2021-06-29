@@ -2,7 +2,7 @@ package roguelike.items;
 
 import roguelike.entities.Player;
 
-public abstract class Weapon extends Item {
+public abstract class Weapon extends Equipable {
 	int hitChance, blockChance, parryChance;
 	int minDamage, maxDamage;
 	
@@ -14,11 +14,6 @@ public abstract class Weapon extends Item {
 		this.minDamage = minDamage;
 		this.maxDamage = maxDamage;
 	}
-	
-	//execute special modifications, such as in(/de)creasing stats or healing the player
-	abstract public void onEquip(Player p);
-	
-	abstract public void onUnequip(Player p);
 	
 	@Override
 	public char getSymbol() {

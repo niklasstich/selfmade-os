@@ -1,14 +1,13 @@
 package roguelike;
 
 import graphics.Console;
-import hardware.Random;
 import hardware.Serial;
 import hardware.keyboard.KeyboardEvent;
 import roguelike.entities.Enemy;
 import roguelike.entities.FinalBoss;
 import roguelike.entities.Player;
 import roguelike.entities.Zombie;
-import roguelike.tiles.FloorTile;
+import roguelike.items.*;
 import roguelike.tiles.Tile;
 import rte.DynamicRuntime;
 import rte.SClassDesc;
@@ -51,6 +50,14 @@ public class RogueExec extends Executable {
 	private boolean confirmQuit = false;
 	//save time not rerendering stats every time
 	private boolean rerenderStats = true;
+	//consumable selection
+	private boolean consumableSelection = false;
+	private Consumable[] consumables;
+	
+	//eqipable selection
+	private boolean equipableSelection = false;
+	private Equipable[] equipables;
+	
 	void init() {
 		Console.disableCursor();
 		firstRun = false;
@@ -68,7 +75,7 @@ public class RogueExec extends Executable {
 		//get a new floor if there is no floor currently
 		//TODO: generate the floor randomly
 		if(currFloor == null) {
-			currFloor = new Floor(Resources.returnBasicFloor());
+			currFloor = FloorFactory.getRandomFloor();
 		}
 		//if player isn't initialized, create new object with random coords on a valid Tile
 		if(player==null) {
@@ -89,6 +96,52 @@ public class RogueExec extends Executable {
 			//display stats
 			//initialize empty message?
 			init();
+		}
+		
+		if(consumableSelection) {
+			while (buffer.canRead()) {
+				KeyboardEvent kev = buffer.readEvent();
+				int selectedIndex = kev.KEYCODE - Key.ZERO;
+				if(selectedIndex > consumables.length-1 || selectedIndex < 0 || selectedIndex > 9) {
+					messages.queueMessage("invalid selection");
+				} else {
+					StringBuilder sb = new StringBuilder("Used ");
+					Consumable c = consumables[selectedIndex];
+					sb.append(c.name);
+					c.onUse(player, messages);
+					player.getItems().delete(c);
+					messages.queueMessage(sb.getString());
+					messages.printStats(player);
+				}
+				consumableSelection = false;
+				messages.printNextMessage();
+			}
+		}
+		
+		if(equipableSelection) {
+			while (buffer.canRead()) {
+				KeyboardEvent kev = buffer.readEvent();
+				int selectedIndex = kev.KEYCODE - Key.ZERO;
+				if(selectedIndex > equipables.length-1 || selectedIndex < 0 || selectedIndex > 9) {
+					messages.queueMessage("invalid selection");
+				} else {
+					StringBuilder sb = new StringBuilder("Equipped");
+					Equipable c = equipables[selectedIndex];
+					sb.append(c.name);
+					c.onEquip(player, messages);
+					if(DynamicRuntime.isInstance(c, (SClassDesc) MAGIC.clssDesc("Weapon"), false)) {
+						//call unequip on old weapon
+						player.setEquippedWeapon((Weapon)c, messages);
+					} else {
+						//TODO: other types of equippables? armor?
+					}
+					player.getItems().delete(c);
+					messages.queueMessage(sb.getString());
+					messages.printStats(player);
+				}
+				equipableSelection = false;
+				messages.printNextMessage();
+			}
 		}
 		while (buffer.canRead()) {
 			KeyboardEvent kev = buffer.readEvent();
@@ -114,10 +167,15 @@ public class RogueExec extends Executable {
 					case Key.l: movement(Resources.DIR_RIGHT); break;
 					case Key.Q: confirmQuit = true; messages.queueMessage("Press Q/q again to quit."); break;
 					case Key.d: player.toggleGodmode(); break;
+					case Key.H: spawnHealthpotion(); break;
 					case Key.Z: spawnEndboss(); break;
+					case Key.R: moveToNewFloor(); break;
+					case Key.c: printConsumables(); break;
+					case Key.e: printEquipables(); break;
+					case Key.E: spawnExcalibur(); break;
 				}
 				//check this again to make sure we print everything
-				if(messages.hasMessages()) {
+				if(messages.hasMessages()&&!player.isDead()&&!player.hasWon()) {
 					messages.printNextMessage();
 				}
 			}
@@ -136,6 +194,21 @@ public class RogueExec extends Executable {
 			rerenderStats = false;
 		}
 		return 0;
+	}
+	
+	private void printEquipables() {
+		equipables = messages.printEquipables(player.getItems());
+		if(equipables!=null)
+			equipableSelection = true;
+	}
+	
+	private void printConsumables() {
+		consumables = messages.printConsumables(player.getItems());
+		if(consumables!=null)
+			consumableSelection = true;
+	}
+	
+	private void moveToNewFloor() {
 	}
 	
 	//check if movement is obstructed by tile or enemy, action accordingly
@@ -157,12 +230,12 @@ public class RogueExec extends Executable {
 			rerenderStats = true;
 			//TODO: handle fight
 			int fightOutcome = Combat.doMeleeCombat(player, enemy, messages);
-			if(fightOutcome == Combat.PLAYER_DIED) {
+			if (fightOutcome == Combat.PLAYER_DIED) {
 				player.setDead();
 				deathScreen();
 				return;
 			}
-			if(fightOutcome == Combat.ENEMY_DIED) {
+			if (fightOutcome == Combat.ENEMY_DIED) {
 				//remove the enemy from the enemy list, and rerender tile it was on
 				currFloor.killEnemy(enemy);
 				Tile t = currFloor.getTileAtCoordinate(newCoord);
@@ -175,7 +248,13 @@ public class RogueExec extends Executable {
 				enemy.onDeath(player, currFloor.getTileAtCoordinate(newCoord));
 			}
 			return;
-		} else {
+		}
+		if(currFloor.hasItemAtCoordinate(newCoord)) {
+			Item it = currFloor.getItemAtCoordinate(newCoord);
+			player.getItems().append(it);
+			StringBuilder sb = new StringBuilder("Found item: ");
+			sb.append(it.name);
+			messages.queueMessage(sb.getString());
 		}
 		player.move(newCoord);
 	}
@@ -192,14 +271,41 @@ public class RogueExec extends Executable {
 		if(currFloor.insertEnemy(e)) Serial.print("success spawning final boss\n ");
 	}
 	
-	private void debugItems() {
-		//find random tile, plant a claymore there
-		Tile t = currFloor.getFloorTiles()[Random.rand(0, Resources.MAX_PLAYFIELD_HEIGHT-1)][Random.rand(0, Resources.MAX_PLAYFIELD_WIDTH-1)];
-		if(DynamicRuntime.isInstance(t, (SClassDesc) MAGIC.clssDesc("FloorTile"), false)) {
-			FloorTile ft = (FloorTile) t;
-			
-		}
+	private void spawnHealthpotion() {
+		//add a healpotion to player inventory
+		player.getItems().append(new HealingPotion());
 	}
+	
+	//drops excalibur next to player
+	private void spawnExcalibur() {
+		spawnItem(new Excalibur(), findSpawnCoordNextToPlayer());
+	}
+	
+	private void spawnItem(Item item, Coordinate coordinate) {
+		currFloor.getTileAtCoordinate(coordinate).putItem(item);
+		renderer.rerenderTile(coordinate);
+	}
+	
+	private Coordinate findSpawnCoordNextToPlayer() {
+		Coordinate spawnCoord = new Coordinate(player.getCoord().getPosx()+1, player.getCoord().getPosy());
+		if(currFloor.isCoordinatePassable(spawnCoord)){
+			return spawnCoord;
+		}
+		spawnCoord = new Coordinate(player.getCoord().getPosx()-1, player.getCoord().getPosy());
+		if(currFloor.isCoordinatePassable(spawnCoord)){
+			return spawnCoord;
+		}
+		spawnCoord = new Coordinate(player.getCoord().getPosx(), player.getCoord().getPosy()+1);
+		if(currFloor.isCoordinatePassable(spawnCoord)){
+			return spawnCoord;
+		}
+		spawnCoord = new Coordinate(player.getCoord().getPosx(), player.getCoord().getPosy()-1);
+		if(currFloor.isCoordinatePassable(spawnCoord)){
+			return spawnCoord;
+		}
+		return null;
+	}
+	
 	
 	private void deathScreen() {
 		//TODO: make this nice like the original rogue death screen
@@ -213,7 +319,7 @@ public class RogueExec extends Executable {
 		StringBuilder sb = new StringBuilder();
 		sb.append("You have managed to best ");
 		sb.append(Resources.ENDBOSS_ENEMYNAME);
-		sb.append(". The world is saved, you are a hero, yada yada.\n");
+		sb.append(". The world is saved, you are a hero, and the world will forever tell the tales of your adventure.\n");
 		Console.print(sb.getString());
 		Scheduler.markTaskAsFinished(this);
 	}

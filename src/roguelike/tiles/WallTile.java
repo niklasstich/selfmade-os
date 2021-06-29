@@ -1,6 +1,6 @@
 package roguelike.tiles;
 
-import roguelike.tiles.Tile;
+import roguelike.items.Item;
 
 public class WallTile extends Tile {
 	
@@ -11,6 +11,11 @@ public class WallTile extends Tile {
 	
 	@Override
 	public boolean isPassable() {
+		return false;
+	}
+	
+	@Override
+	public boolean putItem(Item item) {
 		return false;
 	}
 }

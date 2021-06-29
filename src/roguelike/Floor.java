@@ -4,56 +4,42 @@ import hardware.Random;
 import hardware.Serial;
 import roguelike.entities.Enemy;
 import roguelike.entities.EnemyCollection;
+import roguelike.items.Item;
 import roguelike.tiles.*;
 import rte.DynamicRuntime;
 import rte.SClassDesc;
 
 class Floor {
-	private final Tile[][] floorTiles;
 	private EnemyCollection enemies;
+	private RoomCollection rooms;
+	private CoordinateList pathTileCoords;
+	private ConnectionList connections;
 	
-	//creates a clean floor
-	Floor() {
-		floorTiles = new Tile[Resources.MAX_PLAYFIELD_HEIGHT][Resources.MAX_PLAYFIELD_WIDTH];
-	}
-	
-	Floor(String layout) {
-		layout = layout.removeNewlines();
-		if(layout.length()!=Resources.MAX_PLAYFIELD_WIDTH*Resources.MAX_PLAYFIELD_HEIGHT) {
-			Serial.print(layout.length());
-			MAGIC.inline(0xCC);
-		}
-		floorTiles = new Tile[Resources.MAX_PLAYFIELD_HEIGHT][Resources.MAX_PLAYFIELD_WIDTH];
+	Floor(RoomCollection rooms) {
+		this.rooms = rooms;
 		enemies = new EnemyCollection();
-		parseFloor(layout);
+		rooms = new RoomCollection();
+		pathTileCoords = new CoordinateList();
+		connections = new ConnectionList();
 	}
 	
-	Tile[][] getFloorTiles() {
-		return floorTiles;
+	void setPathTileCoords(CoordinateList cl) {
+		pathTileCoords = cl;
 	}
 	
-	//parses a string layout into a valid floor
-	private void parseFloor(String layout) {
-		for (int row = 0; row < Resources.MAX_PLAYFIELD_HEIGHT; row++) {
-			for (int column = 0; column < Resources.MAX_PLAYFIELD_WIDTH; column++) {
-				int strPos = row*Resources.MAX_PLAYFIELD_WIDTH+column;
-				Tile tile = null;
-				switch (layout.charAt(strPos)) { //TODO: remove magic numbers
-					case '.': tile = new FloorTile(); break;
-					case 178: tile = new PathTile(); break;
-					case '#': tile = new WallTile(); break;
-					case ' ': tile = new BlockedTile(); break;
-				}
-				floorTiles[row][column] = tile;
-			}
-		}
+	public CoordinateList getPathTileCoords() {
+		return pathTileCoords;
+	}
+	
+	public ConnectionList getConnections() {
+		return connections;
 	}
 	
 	//returns a valid spawn position for player
 	public Coordinate getValidSpawn() {
 		//get list of valid coordinates, pick one at random
 		CoordinateList cl = getValidSpawnPoints();
-		return cl.coordinateAt(Random.unsignedRand()%cl.count);
+		return cl.coordinateAt(Random.unsignedRand()%cl.getCount());
 	}
 	
 	//returns a valid spawn position for an enemy, except for the position the player is currently in
@@ -61,15 +47,18 @@ class Floor {
 		CoordinateList cl = getValidSpawnPoints();
 		Coordinate c = null;
 		while(c==null||c==playerPos){
-			c = cl.coordinateAt(Random.unsignedRand()%cl.count);
+			c = cl.coordinateAt(Random.unsignedRand()%cl.getCount());
 		}
 		return c;
 	}
 	
 	//returns whether or not tile at coord is passable
 	public boolean isCoordinatePassable(Coordinate coord) {
-		return floorTiles[coord.getPosy()][coord.getPosx()] != null
-				&& floorTiles[coord.getPosy()][coord.getPosx()].isPassable();
+		//we didn't find a room that contains the coordinate, therefore it is unpassable
+		Tile t = getTileAtCoordinate(coord);
+		if(t!=null)
+			return t.isPassable();
+		return pathTileCoords.contains(coord);
 	}
 	
 	//returns enemy if there is one at coord, otherwise null
@@ -97,42 +86,52 @@ class Floor {
 	}
 	
 	public Tile getTileAtCoordinate(Coordinate coord) {
-		return floorTiles[coord.getPosy()][coord.getPosx()];
+		for (Room r : rooms.getRooms()) {
+			if(r.containsCoordinate(coord)) {
+				return r.getRoomTiles()[coord.getPosy()-r.getY()][coord.getPosx()-r.getX()];
+			}
+		}
+		//there is no tile at that coordinate
+		return null;
 	}
 	
-	//container class for coordinates
-	private static class CoordinateList {
-		Coordinate[] coords = new Coordinate[Resources.MAX_PLAYFIELD_WIDTH*Resources.MAX_PLAYFIELD_HEIGHT];
-		private int count = 0;
-		void add(Coordinate c) {
-			coords[count] = c;
-			count++;
-		}
-		Coordinate coordinateAt(int index) {
-			return coords[index];
-		}
-		
-		boolean contains(Coordinate coord) {
-			for (int i = 0; i < count; i++) {
-				if(coords[i].getPosx() == coord.getPosx() && coords[i].getPosy() == coord.getPosy())
-					return true;
-			}
-			return false;
-		}
+	public RoomCollection getRooms() {
+		return rooms;
 	}
 	
 	//returns a list of all valid spawn points
 	private CoordinateList getValidSpawnPoints() {
 		CoordinateList list = new CoordinateList();
-		for (int row = 0; row < Resources.MAX_PLAYFIELD_HEIGHT; row++) {
-			for (int column = 0; column < Resources.MAX_PLAYFIELD_WIDTH; column++) {
-				Tile tile = floorTiles[row][column];
-				if(tile.isPassable() && !DynamicRuntime.isInstance(tile, (SClassDesc) MAGIC.clssDesc("PathTile"), false)) {
-					list.add(new Coordinate(column, row));
+		for (Room r : rooms.getRooms()) {
+			Tile[][] roomTiles = r.getRoomTiles();
+			for (int x = 0; x < r.getWidth(); x++) {
+				for (int y = 0; y < r.getHeight(); y++) {
+					Tile tile = roomTiles[y][x];
+					if(tile.isPassable() && !DynamicRuntime.isInstance(tile, (SClassDesc) MAGIC.clssDesc("PathTile"), false)) {
+						list.add(new Coordinate(x+r.getX(), y+r.getY()));
+					}
 				}
 			}
 		}
 		return list;
 	}
 	
+	public Item getItemAtCoordinate(Coordinate coordinate) {
+		FloorTile ft = ((FloorTile)getTileAtCoordinate(coordinate));
+		if(ft!=null) {
+			Item item = ft.getItem();
+			ft.removeItem();
+			return item;
+		}
+		return null;
+	}
+	
+	public boolean hasItemAtCoordinate(Coordinate coordinate) {
+		FloorTile ft = ((FloorTile)getTileAtCoordinate(coordinate));
+		if(ft!=null) {
+			Item item = ft.getItem();
+			return item!=null;
+		}
+		return false;
+	}
 }

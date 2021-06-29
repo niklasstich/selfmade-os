@@ -4,6 +4,9 @@ public class Resources {
 	static final int MAX_PLAYFIELD_HEIGHT = 20;
 	static final int MAX_PLAYFIELD_WIDTH = 80;
 	
+	static final int MAX_FLOORFACTORY_ROOMTRIES = 200;
+	static final int MAX_FLOORFACTORY_ROOMS = 10;
+	
 	public static final int MAX_ENEMY_COUNT_PER_FLOOR = 10;
 	
 	//default player stats
@@ -37,6 +40,18 @@ public class Resources {
 	public static final int CLAYMORE_MAXDMG = 5;
 	public static final String CLAYMORE_NAME = "Iron Claymore";
 	
+	//excalibur
+	public static final int EXCALIBUR_HITCHANCE = 100;
+	public static final int EXCALIBUR_BLOCKCHANCE = 75;
+	public static final int EXCALIBUR_PARRYCHANCE = 25;
+	public static final int EXCALIBUR_MINDMG = 25;
+	public static final int EXCALIBUR_MAXDMG = 50;
+	public static final int EXCALIBUR_ADDEDMAXHEALTH = 25;
+	public static final String EXCALIBUR_NAME = "Excalibur, Legendary Sword Of King Arthur";
+	
+	//health potion
+	public static final String HEALTHPOTION_NAME = "Health Potion";
+	public static final int HEALTHPOTION_DHEALTH = 20;
 	//directions
 	static final int DIR_UP = 1;
 	static final int DIR_RIGHT = 2;
